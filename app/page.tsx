@@ -17,10 +17,19 @@ export default async function Home() {
     if (!user) {
         return (
             <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gray-50">
-                <div className="text-center max-w-md">
-                    <h1 className="text-4xl font-extrabold mb-4 text-gray-900">MASL 리그 매니저</h1>
-                    <p className="mb-8 text-gray-600 text-lg">
-                        학교 스포츠 리그에 참여하고 실시간 대진표를 확인하세요. 서비스를 이용하려면 로그인이 필요합니다.
+                <div className="w-full max-w-md bg-white border-4 border-black p-8 rounded-sm shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center">
+                    <h1
+                        className="text-5xl md:text-6xl font-extrabold mb-4 text-black tracking-tighter"
+                        style={{ fontFamily: 'sans-serif' }}
+                    >
+                        MASL
+                    </h1>
+                    <h2 className="text-3xl font-extrabold mb-6 text-black tracking-tighter">리그 매니저</h2>
+                    <div className="w-16 h-2 bg-black mx-auto mb-6"></div>
+                    <p className="mb-10 text-gray-700 font-bold text-lg">
+                        학교 스포츠 리그에 참여하고
+                        <br />
+                        실시간 대진표를 확인하세요.
                     </p>
                     <div className="flex justify-center">
                         <LoginButton />
@@ -40,7 +49,6 @@ export default async function Home() {
     // [Case 2] 관리자(admin) & 운영진(staff): 전용 대시보드로 강제 이동
     // ==========================================
     if (userRole === 'admin' || userRole === 'staff') {
-        // 관리자나 운영진은 일반 랜딩을 볼 필요 없이 곧바로 업무 화면으로 넘깁니다.
         redirect('/admin');
     }
 
@@ -49,59 +57,69 @@ export default async function Home() {
     // ==========================================
     return (
         <main className="min-h-screen bg-gray-50 p-6 md:p-12">
-            <div className="max-w-4xl mx-auto">
-                {/* 상단 환영 메시지 */}
-                <div className="bg-white rounded-2xl p-8 shadow-sm border mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-800 mb-2">환영합니다!</h1>
-                        <p className="text-gray-600 font-medium">
-                            {user.email} 님, MASL에서 즐거운 스포츠 라이프를 즐겨보세요.
+            <div className="max-w-4xl mx-auto flex flex-col items-center">
+                {/* 상단 헤더 영역 (타이틀 좌, 뱃지 우) */}
+                <div className="w-full flex flex-col md:flex-row items-center justify-between border-b-8 border-black pb-6 mb-10 gap-6">
+                    <div className="text-center md:text-left">
+                        <h1
+                            className="text-5xl md:text-6xl font-extrabold text-black tracking-tighter"
+                            style={{ fontFamily: 'sans-serif' }}
+                        >
+                            환영합니다!
+                        </h1>
+                        <p className="text-lg md:text-xl text-gray-600 mt-3 font-bold">
+                            {user.email} 님, 즐거운 스포츠 라이프를 즐겨보세요.
                         </p>
                     </div>
-                    <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-semibold border">
-                        일반 사용자
-                    </span>
+
+                    <div className="bg-white border-4 border-black px-4 py-2 rounded-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        <span className="text-black font-extrabold text-lg">일반 사용자</span>
+                    </div>
                 </div>
 
                 {/* 주요 기능 바로가기 카드 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
                     {/* 참가 신청 카드 */}
                     <Link href="/apply" className="block group">
-                        <div className="bg-white rounded-2xl p-8 shadow-sm border h-full transition duration-300 hover:border-blue-500 hover:shadow-md">
-                            <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
-                                📝
-                            </div>
-                            <h2 className="text-xl font-bold mb-3 text-gray-800">팀 참가 신청</h2>
-                            <p className="text-gray-600 leading-relaxed">
-                                새로운 시즌에 참가할 팀을 구성하고 신청서를 제출하세요. 승인 결과를 확인할 수 있습니다.
+                        <div className="bg-white rounded-sm p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] h-full transition-transform transform group-hover:-translate-y-2 group-hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center text-center">
+                            <div className="text-7xl mb-6 transform group-hover:scale-110 transition-transform">📝</div>
+                            <h2 className="text-3xl font-extrabold mb-4 text-black tracking-tighter">팀 참가 신청</h2>
+                            <p className="text-gray-700 font-bold text-lg leading-relaxed">
+                                새로운 시즌에 참가할 팀을
+                                <br />
+                                구성하고 신청서를 제출하세요.
                             </p>
                         </div>
                     </Link>
 
                     {/* 대진표 확인 카드 */}
                     <Link href="/bracket" className="block group">
-                        <div className="bg-white rounded-2xl p-8 shadow-sm border h-full transition duration-300 hover:border-green-500 hover:shadow-md">
-                            <div className="w-14 h-14 bg-green-50 text-green-600 rounded-xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
-                                🏆
-                            </div>
-                            <h2 className="text-xl font-bold mb-3 text-gray-800">대진표 및 스코어</h2>
-                            <p className="text-gray-600 leading-relaxed">
-                                진행 중인 대회의 실시간 대진표와 경기 결과를 로그인 없이도 한눈에 확인하세요.
+                        <div className="bg-white rounded-sm p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] h-full transition-transform transform group-hover:-translate-y-2 group-hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center text-center">
+                            <div className="text-7xl mb-6 transform group-hover:scale-110 transition-transform">🏆</div>
+                            <h2 className="text-3xl font-extrabold mb-4 text-black tracking-tighter">대진표 확인</h2>
+                            <p className="text-gray-700 font-bold text-lg leading-relaxed">
+                                진행 중인 대회의 실시간
+                                <br />
+                                대진표와 경기 결과를 확인하세요.
                             </p>
                         </div>
                     </Link>
                 </div>
 
                 {/* 하단 운영진 신청 배너 */}
-                <div className="mt-12 bg-blue-50/50 rounded-2xl p-6 md:p-8 border border-blue-100 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="mt-12 w-full bg-white rounded-sm p-6 md:p-10 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
                     <div>
-                        <h3 className="text-lg font-bold text-blue-900 mb-2">혹시 리그 운영진이신가요?</h3>
-                        <p className="text-blue-700/80 text-sm">
-                            팀 승인 및 대진표 관리, 점수 입력 권한이 필요하다면 최고 관리자에게 권한을 요청하세요.
+                        <h3 className="text-2xl font-extrabold text-black mb-3 tracking-tighter">
+                            혹시 리그 운영진이신가요?
+                        </h3>
+                        <p className="text-gray-700 font-bold text-lg">
+                            팀 승인 및 대진표 관리 권한이 필요하다면 요청하세요.
                         </p>
                     </div>
                     {/* 앞서 만든 클라이언트 컴포넌트 호출 */}
-                    <RequestStaffButton initialStatus={userStatus} />
+                    <div className="border-2 border-black p-1 rounded-sm">
+                        <RequestStaffButton initialStatus={userStatus} />
+                    </div>
                 </div>
             </div>
         </main>
