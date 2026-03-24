@@ -88,7 +88,7 @@ export default async function Home() {
                 </div>
 
                 {/* 주요 기능 바로가기 카드 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
                     {/* 참가 신청 카드 */}
                     <Link href="/apply" className="block group">
                         <div className="bg-white rounded-sm p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] h-full transition-transform transform group-hover:-translate-y-2 group-hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center text-center">
@@ -109,18 +109,6 @@ export default async function Home() {
                                 진행 중인 대회의 실시간
                                 <br />
                                 대진표와 경기 결과를 확인하세요.
-                            </p>
-                        </div>
-                    </Link>
-
-                    {/* 참가 신청 현황 카드 */}
-                    <Link href="/status" className="block group">
-                        <div className="bg-white rounded-sm p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] h-full transition-transform transform group-hover:-translate-y-2 group-hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center text-center">
-                            <h2 className="text-3xl font-extrabold mb-4 text-black tracking-tighter">참가 신청 현황</h2>
-                            <p className="text-gray-700 font-bold text-lg leading-relaxed">
-                                제출한 팀 신청서의 상태를
-                                <br />
-                                확인하고 수정하세요.
                             </p>
                         </div>
                     </Link>
