@@ -74,8 +74,16 @@ export default async function Home() {
                         <p className="text-lg md:text-xl text-gray-600 mt-3 font-bold">{userName} 님, 환영합니다.</p>
                     </div>
 
-                    <div className="bg-white border-4 border-black px-4 py-2 rounded-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                        <span className="text-black font-extrabold text-lg">일반 사용자</span>
+                    <div className="flex flex-col md:flex-row gap-3 items-center">
+                        <Link
+                            href="/status"
+                            className="bg-white border-4 border-black px-4 py-2 rounded-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition"
+                        >
+                            <span className="text-black font-extrabold text-lg">신청 진행 상태</span>
+                        </Link>
+                        <div className="bg-white border-4 border-black px-4 py-2 rounded-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                            <span className="text-black font-extrabold text-lg">일반 사용자</span>
+                        </div>
                     </div>
                 </div>
 
