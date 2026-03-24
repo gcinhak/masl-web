@@ -5,34 +5,16 @@ import React, { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 // 대진표 라이브러리 임포트
 import { SingleEliminationBracket } from '@g-loot/react-tournament-brackets';
-// 동물 아이콘 임포트 (Game Icons 세트 사용)
-import {
-    GiCat,
-    GiDogHouse,
-    GiBearHead,
-    GiDinosaurBones,
-    GiWolfHead,
-    GiFrog,
-    GiCrowNest,
-    GiDragonHead,
-    GiCrownedSkull,
-} from 'react-icons/gi';
 
 // ==========================================
-// 1. 동물 아이콘 매핑 테이블
+// 1. 손글씨 스타일 폰트 스타일 정의
 // ==========================================
-const iconMap: { [key: string]: React.ReactNode } = {
-    cat: <GiCat className="w-10 h-10 text-black" />,
-    dog: <GiDogHouse className="w-10 h-10 text-black" />,
-    bear: <GiBearHead className="w-10 h-10 text-black" />,
-    dino: <GiDinosaurBones className="w-10 h-10 text-black" />,
-    wolf: <GiWolfHead className="w-10 h-10 text-black" />,
-    frog: <GiFrog className="w-10 h-10 text-black" />,
-    crow: <GiCrowNest className="w-10 h-10 text-black" />,
-    dragon: <GiDragonHead className="w-10 h-10 text-black" />,
+const handwritingStyle = {
+    fontFamily: '"Caveat", "Indie Flower", cursive',
+    fontWeight: 700,
+    fontSize: '1.1rem',
+    letterSpacing: '-0.5px',
 };
-// 기본 아이콘 (해골)
-const DefaultIcon = <GiCrownedSkull className="w-10 h-10 text-gray-300" />;
 
 // ==========================================
 // 2. 타입 정의 (TypeScript & ESLint 통과용)
@@ -72,16 +54,6 @@ const NyanMatchCard = ({ match }: CustomMatchProps) => {
     const team1 = participants[0];
     const team2 = participants[1];
 
-    // 동물 아이콘 가져오기 로직
-    const getIcon = (party?: Participant) => {
-        if (!party || !party.id) return null; // 팀이 미정일 때
-        if (typeof party.id === 'string' && party.id.startsWith('t1-dummy')) return null;
-
-        const key = party.iconKey;
-        if (!key) return DefaultIcon;
-        return iconMap[key] || DefaultIcon;
-    };
-
     return (
         <div
             className="border-4 border-black bg-white p-2 rounded-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
@@ -93,11 +65,11 @@ const NyanMatchCard = ({ match }: CustomMatchProps) => {
 
             {/* 팀 1 영역 */}
             <div className={`flex items-center gap-3 p-2 mb-2 ${team1?.isWinner ? 'bg-gray-100' : ''}`}>
-                <div className="w-12 h-12 flex items-center justify-center border-2 border-gray-300 rounded-lg p-1 bg-white">
-                    {getIcon(team1)}
-                </div>
                 <div className="flex-1 flex items-center justify-between">
-                    <span className={`font-bold text-lg ${team1?.isWinner ? 'font-black' : 'text-gray-700'}`}>
+                    <span
+                        className={`font-bold text-lg ${team1?.isWinner ? 'font-black' : 'text-gray-700'}`}
+                        style={handwritingStyle}
+                    >
                         {team1?.name || '(미정)'}
                     </span>
                     <span className="font-mono text-3xl font-black text-black ml-2">{team1?.resultText ?? '-'}</span>
@@ -111,11 +83,11 @@ const NyanMatchCard = ({ match }: CustomMatchProps) => {
 
             {/* 팀 2 영역 */}
             <div className={`flex items-center gap-3 p-2 ${team2?.isWinner ? 'bg-gray-100' : ''}`}>
-                <div className="w-12 h-12 flex items-center justify-center border-2 border-gray-300 rounded-lg p-1 bg-white">
-                    {getIcon(team2)}
-                </div>
                 <div className="flex-1 flex items-center justify-between">
-                    <span className={`font-bold text-lg ${team2?.isWinner ? 'font-black' : 'text-gray-700'}`}>
+                    <span
+                        className={`font-bold text-lg ${team2?.isWinner ? 'font-black' : 'text-gray-700'}`}
+                        style={handwritingStyle}
+                    >
                         {team2?.name || '(미정)'}
                     </span>
                     <span className="font-mono text-3xl font-black text-black ml-2">{team2?.resultText ?? '-'}</span>
