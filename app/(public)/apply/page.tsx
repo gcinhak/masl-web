@@ -29,6 +29,7 @@ export default function ApplyPage() {
     // 폼 입력 데이터 상태
     const [selectedSport, setSelectedSport] = useState('');
     const [teamName, setTeamName] = useState('');
+    const [applicantEmail, setApplicantEmail] = useState('');
 
     // 팀원 명단 상태 (기본 5명 세팅)
     const [members, setMembers] = useState<Member[]>(
@@ -72,6 +73,12 @@ export default function ApplyPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // 신청자 이메일 확인
+        if (!applicantEmail.trim()) {
+            alert('신청자 이메일을 입력해 주세요.');
+            return;
+        }
+
         // 유효성 검사: 이름이 비어있는 멤버 제외
         const validMembers = members.filter((m) => m.name.trim() !== '');
         if (validMembers.length === 0) {
@@ -112,6 +119,9 @@ export default function ApplyPage() {
 
         setIsLoading(true);
 
+        // 대표 학생은 첫 번째 팀원
+        const representativeStudent = validMembers[0].name;
+
         // teams 테이블에 데이터 삽입
         const { error } = await supabase.from('teams').insert([
             {
@@ -120,6 +130,8 @@ export default function ApplyPage() {
                 // roster를 학년, 이름, 번호가 포함된 객체 배열로 저장
                 roster: validMembers,
                 status: '승인대기',
+                applicant_email: applicantEmail.trim(),
+                representative_student: representativeStudent,
             },
         ]);
 
@@ -155,6 +167,19 @@ export default function ApplyPage() {
                 <form onSubmit={handleSubmit} className="flex flex-col gap-10">
                     {/* 기본 정보 상자 */}
                     <div className="bg-white border-4 border-black p-6 md:p-8 rounded-sm shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col gap-6">
+                        {/* 신청자 이메일 */}
+                        <div>
+                            <label className="block text-xl font-black text-black mb-3">▶ 신청자 이메일</label>
+                            <input
+                                type="email"
+                                required
+                                placeholder="신청자의 이메일을 입력하세요"
+                                value={applicantEmail}
+                                onChange={(e) => setApplicantEmail(e.target.value)}
+                                className="w-full p-4 border-4 border-black rounded-sm focus:ring-4 focus:ring-gray-300 font-bold text-lg"
+                            />
+                        </div>
+
                         {/* 참가 종목 선택 */}
                         <div>
                             <label className="block text-xl font-black text-black mb-3">▶ 참가 종목</label>
@@ -202,9 +227,15 @@ export default function ApplyPage() {
                             {members.map((member, index) => (
                                 <div
                                     key={index}
-                                    className="flex flex-wrap md:flex-nowrap gap-2 items-center border-b-2 border-gray-100 pb-2 md:pb-0 md:border-none"
+                                    className={`flex flex-wrap md:flex-nowrap gap-2 items-center border-b-2 pb-2 md:pb-0 md:border-none ${
+                                        index === 0
+                                            ? 'bg-yellow-50 p-2 rounded border-2 border-yellow-200'
+                                            : 'border-gray-100'
+                                    }`}
                                 >
-                                    <span className="font-black text-black min-w-[30px]">{index + 1}.</span>
+                                    <span className="font-black text-black min-w-[30px]">
+                                        {index + 1}.{index === 0 && ' 대표'}
+                                    </span>
                                     <input
                                         type="text"
                                         placeholder="학년"

@@ -66,7 +66,8 @@ export default function AdminTeamsPage() {
                                 <th className="p-4 font-semibold text-gray-600">신청 날짜</th>
                                 <th className="p-4 font-semibold text-gray-600">종목</th>
                                 <th className="p-4 font-semibold text-gray-600">팀 이름</th>
-                                <th className="p-4 font-semibold text-gray-600">대표자 연락처</th>
+                                <th className="p-4 font-semibold text-gray-600">대표 학생</th>
+                                <th className="p-4 font-semibold text-gray-600">신청자</th>
                                 <th className="p-4 font-semibold text-gray-600">상태</th>
                                 <th className="p-4 font-semibold text-gray-600 text-center">관리</th>
                             </tr>
@@ -74,7 +75,7 @@ export default function AdminTeamsPage() {
                         <tbody>
                             {teams.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="p-8 text-center text-gray-500">
+                                    <td colSpan={7} className="p-8 text-center text-gray-500">
                                         아직 신청한 팀이 없습니다.
                                     </td>
                                 </tr>
@@ -87,7 +88,8 @@ export default function AdminTeamsPage() {
                                         {/* sports 테이블에서 가져온 종목명 출력 */}
                                         <td className="p-4 font-medium">{team.sports?.name}</td>
                                         <td className="p-4 font-bold text-gray-800">{team.name}</td>
-                                        <td className="p-4 text-sm">{team.contact}</td>
+                                        <td className="p-4 text-sm">{team.representative_student || '-'}</td>
+                                        <td className="p-4 text-sm">{team.applicant_email || '-'}</td>
                                         <td className="p-4">
                                             {/* 상태에 따라 뱃지 색상을 다르게 보여줍니다 */}
                                             <span
