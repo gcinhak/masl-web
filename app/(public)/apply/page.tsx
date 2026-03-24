@@ -126,8 +126,13 @@ export default function ApplyPage() {
         setIsLoading(false);
 
         if (error) {
-            console.error('신청 에러:', error);
-            alert('신청 중 오류가 발생했습니다.');
+            console.error('신청 에러 상세:', {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code,
+            });
+            alert(`신청 중 오류가 발생했습니다.\n[${error.code}] ${error.message}`);
         } else {
             alert('참가 신청이 완료되었습니다!');
             router.push('/');
