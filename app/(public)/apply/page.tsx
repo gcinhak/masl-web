@@ -79,6 +79,37 @@ export default function ApplyPage() {
             return;
         }
 
+        // 종목 선택 확인
+        if (!selectedSport) {
+            alert('종목을 선택해 주세요.');
+            return;
+        }
+
+        // 팀 이름 확인
+        if (!teamName.trim()) {
+            alert('팀 이름을 입력해 주세요.');
+            return;
+        }
+
+        // 중복 검사: 같은 이름이 있는지 확인
+        const names = validMembers.map((m) => m.name.trim());
+        const uniqueNames = new Set(names);
+
+        if (uniqueNames.size !== names.length) {
+            alert('같은 이름의 팀원이 있습니다. 중복된 이름을 확인해 주세요.');
+            return;
+        }
+
+        // 중복 검사: 같은 번호가 있는지 확인
+        const numbers = validMembers.map((m) => m.number.trim()).filter((num) => num !== ''); // 빈 번호는 제외
+
+        const uniqueNumbers = new Set(numbers);
+
+        if (uniqueNumbers.size !== numbers.length) {
+            alert('같은 번호의 팀원이 있습니다. 중복된 번호를 확인해 주세요.');
+            return;
+        }
+
         setIsLoading(true);
 
         // teams 테이블에 데이터 삽입
@@ -217,7 +248,7 @@ export default function ApplyPage() {
                         disabled={isLoading || sports.length === 0}
                         className="w-full py-6 bg-black text-white font-black text-2xl rounded-sm shadow-[8px_8px_0px_0px_rgba(100,100,100,1)] hover:bg-gray-800 disabled:bg-gray-400 transition mb-10"
                     >
-                        {isLoading ? '제출 중...' : '신청서 제출 완료'}
+                        {isLoading ? '제출 중...' : '신청서 제출하기'}
                     </button>
                 </form>
             </div>
