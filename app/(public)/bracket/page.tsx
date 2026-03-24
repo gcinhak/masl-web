@@ -16,6 +16,14 @@ const handwritingStyle = {
     letterSpacing: '-0.5px',
 };
 
+// 손으로 그린 느낌의 박스 스타일
+const roughBoxStyle = {
+    border: '3px solid #000',
+    borderRadius: '2px',
+    boxShadow: '2px 2px 0px rgba(0,0,0,0.2), -1px -1px 0px rgba(0,0,0,0.1)',
+    backgroundColor: '#fff',
+};
+
 // ==========================================
 // 2. 타입 정의 (TypeScript & ESLint 통과용)
 // ==========================================
@@ -56,15 +64,17 @@ const NyanMatchCard = ({ match }: CustomMatchProps) => {
 
     return (
         <div
-            className="border-4 border-black bg-white p-2 rounded-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-            style={{ width: '280px' }}
+            className="bg-white p-2"
+            style={{
+                width: '280px',
+                ...roughBoxStyle,
+            }}
         >
-            <div className="text-center font-extrabold text-xl mb-3 border-b-2 border-dashed border-gray-400 pb-1">
-                {match.tournamentRoundText}
-            </div>
-
             {/* 팀 1 영역 */}
-            <div className={`flex items-center gap-3 p-2 mb-2 ${team1?.isWinner ? 'bg-gray-100' : ''}`}>
+            <div
+                className={`flex items-center gap-2 p-2 mb-2 ${team1?.isWinner ? 'bg-gray-50' : ''}`}
+                style={{ ...roughBoxStyle, borderWidth: '2px' }}
+            >
                 <div className="flex-1 flex items-center justify-between">
                     <span
                         className={`font-bold text-lg ${team1?.isWinner ? 'font-black' : 'text-gray-700'}`}
@@ -72,7 +82,7 @@ const NyanMatchCard = ({ match }: CustomMatchProps) => {
                     >
                         {team1?.name || '(미정)'}
                     </span>
-                    <span className="font-mono text-3xl font-black text-black ml-2">{team1?.resultText ?? '-'}</span>
+                    <span className="font-mono text-2xl font-black text-black ml-2">{team1?.resultText ?? '-'}</span>
                 </div>
             </div>
 
@@ -82,7 +92,10 @@ const NyanMatchCard = ({ match }: CustomMatchProps) => {
             </div>
 
             {/* 팀 2 영역 */}
-            <div className={`flex items-center gap-3 p-2 ${team2?.isWinner ? 'bg-gray-100' : ''}`}>
+            <div
+                className={`flex items-center gap-2 p-2 ${team2?.isWinner ? 'bg-gray-50' : ''}`}
+                style={{ ...roughBoxStyle, borderWidth: '2px' }}
+            >
                 <div className="flex-1 flex items-center justify-between">
                     <span
                         className={`font-bold text-lg ${team2?.isWinner ? 'font-black' : 'text-gray-700'}`}
@@ -90,7 +103,7 @@ const NyanMatchCard = ({ match }: CustomMatchProps) => {
                     >
                         {team2?.name || '(미정)'}
                     </span>
-                    <span className="font-mono text-3xl font-black text-black ml-2">{team2?.resultText ?? '-'}</span>
+                    <span className="font-mono text-2xl font-black text-black ml-2">{team2?.resultText ?? '-'}</span>
                 </div>
             </div>
         </div>
@@ -221,15 +234,19 @@ export default function PublicBracketPage() {
                         <div className="text-center py-20 text-gray-500 text-lg font-bold">동물 선수들 입장 중...</div>
                     ) : bracketData.length > 0 && hasFinalMatch ? (
                         <div style={{ minWidth: '1000px', minHeight: '600px' }} className="relative">
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white px-6 py-2 border-4 border-black">
-                                <span className="text-4xl font-extrabold text-black">우 승</span>
-                            </div>
-
                             <SingleEliminationBracket
                                 matches={bracketData}
                                 matchComponent={NyanMatchCard}
                                 // 확대/축소(zoom) 및 panning을 제거하기 위해 SVGViewer 대신 기본 wrapper를 사용
                                 svgWrapper={({ children }: { children: React.ReactNode }) => <>{children}</>}
+                                // 라운드 헤더 비활성화
+                                options={{
+                                    style: {
+                                        roundHeader: {
+                                            isShown: false,
+                                        },
+                                    },
+                                }}
                             />
                         </div>
                     ) : bracketData.length > 0 ? (
