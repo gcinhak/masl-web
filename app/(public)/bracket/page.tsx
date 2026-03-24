@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 // 대진표 라이브러리 임포트
-import { SingleEliminationBracket, SVGViewer } from '@g-loot/react-tournament-brackets';
+import { SingleEliminationBracket } from '@g-loot/react-tournament-brackets';
 // 동물 아이콘 임포트 (Game Icons 세트 사용)
 import {
     GiCat,
@@ -256,23 +256,8 @@ export default function PublicBracketPage() {
                             <SingleEliminationBracket
                                 matches={bracketData}
                                 matchComponent={NyanMatchCard}
-                                svgWrapper={({
-                                    children,
-                                    ...props
-                                }: {
-                                    children: React.ReactNode;
-                                    [key: string]: unknown;
-                                }) => (
-                                    <SVGViewer
-                                        width={1000}
-                                        height={600}
-                                        {...props}
-                                        baseColor="#000000"
-                                        highlightColor="#000000"
-                                    >
-                                        {children}
-                                    </SVGViewer>
-                                )}
+                                // 확대/축소(zoom) 및 panning을 제거하기 위해 SVGViewer 대신 기본 wrapper를 사용
+                                svgWrapper={({ children }: { children: React.ReactNode }) => <>{children}</>}
                             />
                         </div>
                     ) : bracketData.length > 0 ? (
