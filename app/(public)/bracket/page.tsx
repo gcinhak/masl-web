@@ -3,16 +3,18 @@
 
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-// 대진표 라이브러리 임포트
-import { SingleEliminationBracket } from '@g-loot/react-tournament-brackets';
+// 대진표 라이브러리 및 커스텀 컴포넌트 임포트
+// SVGViewer를 다시 가져옵니다.
+import { SingleEliminationBracket, SVGViewer } from '@g-loot/react-tournament-brackets';
 
 // ==========================================
 // 1. 손글씨 스타일 폰트 스타일 정의
+// 구글 폰트 Caveat와 Indie Flower를 사용합니다. (브라우저에서 직접 로드하는 방식 추가)
 // ==========================================
 const handwritingStyle = {
     fontFamily: '"Caveat", "Indie Flower", cursive',
     fontWeight: 700,
-    fontSize: '1.1rem',
+    fontSize: '1.2rem',
     letterSpacing: '-0.5px',
 };
 
@@ -47,6 +49,7 @@ interface Sport {
 
 // ==========================================
 // 3. Custom Match Card 컴포넌트 (냥코 대전쟁 스타일 구현)
+// 참고 이미지처럼 테두리가 없는 손글씨 형식으로 변경합니다.
 // ==========================================
 const NyanMatchCard = ({ match }: CustomMatchProps) => {
     // ★ 런타임 에러 해결: participants 데이터가 match 객체 안에 들어있음을 명확히 하고 빈 배열로 방어합니다.
@@ -56,60 +59,54 @@ const NyanMatchCard = ({ match }: CustomMatchProps) => {
 
     return (
         <div
-            className="bg-transparent p-0"
+            className="bg-transparent p-0 flex flex-col items-center justify-center"
             style={{
                 width: '280px',
             }}
         >
             {/* 팀 1 영역 */}
             <div
-                className={`flex flex-col items-center justify-center p-3 mb-3 ${team1?.isWinner ? 'bg-gray-50' : ''}`}
+                className={`flex items-center justify-center p-2 mb-2 ${team1?.isWinner ? 'bg-gray-50' : ''}`}
                 style={{
-                    border: '2px solid #000',
+                    border: 'none',
                     borderRadius: '1px',
                     minHeight: '60px',
+                    width: '100%',
                 }}
             >
                 <span
-                    className={`font-bold text-base text-center ${team1?.isWinner ? 'font-black' : 'text-gray-700'}`}
+                    className={`font-bold text-lg text-center mx-3 flex-1 ${team1?.isWinner ? 'font-black' : 'text-gray-700'}`}
                     style={handwritingStyle}
                 >
                     {team1?.name || '(미정)'}
                 </span>
-                <span className="font-mono text-2xl font-black text-black mt-1">{team1?.resultText ?? '-'}</span>
+                {/* 점수: 흑백 블록 형태를 제거하고 작고 깔끔하게 표현 */}
+                <span className="font-mono text-xl font-black text-black ml-auto">{team1?.resultText ?? '-'}</span>
             </div>
 
-            {/* VS 선 */}
-            <svg
-                width="100%"
-                height="24"
-                viewBox="0 0 260 24"
-                style={{ overflow: 'visible', margin: '6px 0' }}
-                preserveAspectRatio="none"
-            >
-                {/* 손그린 느낌의 (약간 휘어진) 라인 */}
-                <path d="M 10 12 Q 130 8, 250 12" stroke="#000" strokeWidth="2" fill="none" strokeLinecap="round" />
-                <text x="130" y="20" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#999">
-                    VS
-                </text>
-            </svg>
+            {/* VS 구분선 */}
+            <div className="relative text-center my-1 h-2 flex items-center justify-center w-full">
+                <div className="absolute w-full h-px bg-gray-200"></div>
+                <span className="relative bg-white px-2 text-xs font-bold text-gray-400">VS</span>
+            </div>
 
             {/* 팀 2 영역 */}
             <div
-                className={`flex flex-col items-center justify-center p-3 ${team2?.isWinner ? 'bg-gray-50' : ''}`}
+                className={`flex items-center justify-center p-2 mt-2 ${team2?.isWinner ? 'bg-gray-50' : ''}`}
                 style={{
-                    border: '2px solid #000',
+                    border: 'none',
                     borderRadius: '1px',
                     minHeight: '60px',
+                    width: '100%',
                 }}
             >
                 <span
-                    className={`font-bold text-base text-center ${team2?.isWinner ? 'font-black' : 'text-gray-700'}`}
+                    className={`font-bold text-lg text-center mx-3 flex-1 ${team2?.isWinner ? 'font-black' : 'text-gray-700'}`}
                     style={handwritingStyle}
                 >
                     {team2?.name || '(미정)'}
                 </span>
-                <span className="font-mono text-2xl font-black text-black mt-1">{team2?.resultText ?? '-'}</span>
+                <span className="font-mono text-xl font-black text-black ml-auto">{team2?.resultText ?? '-'}</span>
             </div>
         </div>
     );
@@ -124,6 +121,15 @@ export default function PublicBracketPage() {
     const [selectedSport, setSelectedSport] = useState('');
     const [bracketData, setBracketData] = useState<BracketMatch[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+
+    // ★ 폰트 로드: useEffect를 사용하여 폰트 링크를 index.html에 추가합니다.
+    useEffect(() => {
+        // Caveat와 Indie Flower 폰트 링크 추가
+        const link = document.createElement('link');
+        link.href = 'https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Indie+Flower&display=swap';
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+    }, []);
 
     // 종목 목록 불러오기
     useEffect(() => {
@@ -201,15 +207,18 @@ export default function PublicBracketPage() {
     const hasFinalMatch = bracketData.some((m) => m.nextMatchId === null || m.nextMatchId === undefined);
 
     return (
-        <div className="min-h-screen bg-gray-100 p-6 md:p-12">
-            <div className="max-w-7xl mx-auto">
-                <div className="text-center mb-10">
-                    <h1 className="text-2xl font-bold text-black" style={{ fontFamily: 'sans-serif' }}>
-                        대진표
+        // ★ 배경색을 흰색으로 변경
+        <div className="min-h-screen bg-white p-6 md:p-12">
+            <div className="max-w-7xl mx-auto flex flex-col items-center">
+                <div className="text-center mb-10 w-full">
+                    {/* ★ 참고 이미지처럼 페이지 제목을 "8강 대진표"로 변경하고 글씨 크기를 키웁니다. */}
+                    <h1 className="text-4xl font-extrabold text-black" style={{ fontFamily: 'sans-serif' }}>
+                        8강 대진표
                     </h1>
                 </div>
 
-                <div className="mb-10 mx-auto" style={{ width: '280px' }}>
+                {/* ★ 가로 너비 제한을 제거하여 flow가 넓게 펴지도록 함 */}
+                <div className="mb-10 w-full" style={{ maxWidth: '280px' }}>
                     <select
                         className="w-full p-3 border-2 border-black rounded-sm focus:ring-2 focus:ring-gray-300 font-bold bg-white"
                         value={selectedSport}
@@ -224,19 +233,34 @@ export default function PublicBracketPage() {
                     </select>
                 </div>
 
-                <div
-                    className="bg-transparent p-0 md:p-0 overflow-x-auto relative"
-                    style={{ width: '280px', margin: '0 auto' }}
-                >
+                {/* ★ 대진표 영역: 가로 너비 제한을 제거하고 flex centering 적용 */}
+                <div className="bg-transparent p-0 w-full flex-1 relative overflow-x-auto flex justify-center items-center">
                     {isLoading ? (
                         <div className="text-center py-20 text-gray-500 text-lg font-bold">동물 선수들 입장 중...</div>
                     ) : bracketData.length > 0 && hasFinalMatch ? (
-                        <div style={{ minWidth: '280px', minHeight: 'auto' }} className="relative">
+                        <div style={{ minWidth: '1000px', minHeight: '600px' }} className="relative">
+                            {/* ★ 중앙 "우승" 글자 overlay (Handwriting 스타일) */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white px-6 py-2 border-4 border-black">
+                                <span className="text-4xl font-extrabold text-black">우 승</span>
+                            </div>
+
                             <SingleEliminationBracket
                                 matches={bracketData}
                                 matchComponent={NyanMatchCard}
-                                // 확대/축소(zoom) 및 panning을 제거하기 위해 SVGViewer 대신 기본 wrapper를 사용
-                                svgWrapper={({ children }: { children: React.ReactNode }) => <>{children}</>}
+                                // ★ 확대/축소(zoom) 및 panning을 제거하기 위해 SVGViewer 대신 기본 wrapper를 사용했던 것을 철회하고,
+                                // 가로 대진표를 위해 SVGViewer를 다시 사용. (중앙 separator를 위해 fixed size 사용)
+                                svgWrapper={({
+                                    children,
+                                    ...props
+                                }: {
+                                    children: React.ReactNode;
+                                    [key: string]: unknown;
+                                }) => (
+                                    // 트리 그래픽(SVG)의 크기와 위치 조정. 중앙 separator를 위해 fixed size 사용.
+                                    <SVGViewer width={1000} height={600} {...props}>
+                                        {children}
+                                    </SVGViewer>
+                                )}
                                 // 라운드 헤더 비활성화
                                 options={{
                                     style: {
