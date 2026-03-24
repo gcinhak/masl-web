@@ -68,7 +68,7 @@ export default async function Home() {
                             className="text-5xl md:text-6xl font-extrabold text-black tracking-tighter"
                             style={{ fontFamily: 'sans-serif' }}
                         >
-                            환영합니다!
+                            MASL
                         </h1>
                         {/* ✅ 수정됨: user.email 대신 userName을 사용 */}
                         <p className="text-lg md:text-xl text-gray-600 mt-3 font-bold">{userName} 님, 환영합니다.</p>
