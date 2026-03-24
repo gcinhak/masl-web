@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 // 대진표 라이브러리 및 custom 컴포넌트 임포트
-import { SingleEliminationBracket, SVGViewer, MatchCardProps } from '@g-loot/react-tournament-brackets';
+import { SingleEliminationBracket, SVGViewer } from '@g-loot/react-tournament-brackets';
 // 동물 아이콘 임포트 (Game Icons 세트 사용)
 import {
     GiCat,
@@ -37,20 +37,39 @@ const DefaultIcon = <GiCrownedSkull className="w-10 h-10 text-gray-300" />;
 // ==========================================
 // 2. Custom Match Card 컴포넌트 (냥코 대전쟁 스타일 구현)
 // ==========================================
+
+// ✅ 타입스크립트와 ESLint를 만족시키기 위한 데이터 생김새 정의
+interface Participant {
+    id: string | number;
+    isWinner?: boolean;
+    name?: string;
+    resultText?: string | null;
+    iconKey?: string;
+}
+
+interface CustomMatchProps {
+    match: {
+        tournamentRoundText?: string;
+        [key: string]: unknown;
+    };
+    participants: Participant[];
+}
+
 // 라이브러리의 기본 카드 디자인을 버리고, 흑백 선과 동물이 올라간 디자인을 직접 그립니다.
-const NyanMatchCard = ({ match, participants, ...props }: MatchCardProps) => {
+const NyanMatchCard = ({ match, participants }: CustomMatchProps) => {
     // 팀 1, 2 정보 가져오기
     const team1 = participants[0];
     const team2 = participants[1];
 
     // DB에서 가져온 icon_key를 이용해 동물 아이콘 가져오기
-    const getIcon = (party: any) => {
+    const getIcon = (party?: Participant) => {
         if (!party || !party.id) return null; // 팀이 미정일 때
         // dummy ID일 경우 (미정)
         if (typeof party.id === 'string' && party.id.startsWith('t1-dummy')) return null;
 
         // DB의 icon_key 값 사용
         const key = party.iconKey;
+        if (!key) return DefaultIcon;
         return iconMap[key] || DefaultIcon;
     };
 
@@ -60,23 +79,20 @@ const NyanMatchCard = ({ match, participants, ...props }: MatchCardProps) => {
             className="border-4 border-black bg-white p-2 rounded-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
             style={{ width: '280px' }}
         >
-            {/* 라운드 정보 (8강, 4강 등) - 손글씨 느낌 폰트가 있으면 좋겠지만 기본 굵은 폰트로 */}
+            {/* 라운드 정보 (8강, 4강 등) */}
             <div className="text-center font-extrabold text-xl mb-3 border-b-2 border-dashed border-gray-400 pb-1">
                 {match.tournamentRoundText}
             </div>
 
             {/* 팀 1 영역 */}
             <div className={`flex items-center gap-3 p-2 mb-2 ${team1?.isWinner ? 'bg-gray-100' : ''}`}>
-                {/* 동물 아이콘 (팀이 있을 때만) */}
-                <div className="w-12 h-12 flex items-center justify-center border-2 border-gray-300 rounded-lg p-1">
+                <div className="w-12 h-12 flex items-center justify-center border-2 border-gray-300 rounded-lg p-1 bg-white">
                     {getIcon(team1)}
                 </div>
-                {/* 팀 이름 및 점수 */}
                 <div className="flex-1 flex items-center justify-between">
                     <span className={`font-bold text-lg ${team1?.isWinner ? 'font-black' : 'text-gray-700'}`}>
                         {team1?.name || '(미정)'}
                     </span>
-                    {/* 점수: 큼직하고 투박하게 */}
                     <span className="font-mono text-3xl font-black text-black ml-2">{team1?.resultText ?? '-'}</span>
                 </div>
             </div>
@@ -89,7 +105,7 @@ const NyanMatchCard = ({ match, participants, ...props }: MatchCardProps) => {
 
             {/* 팀 2 영역 */}
             <div className={`flex items-center gap-3 p-2 ${team2?.isWinner ? 'bg-gray-100' : ''}`}>
-                <div className="w-12 h-12 flex items-center justify-center border-2 border-gray-300 rounded-lg p-1">
+                <div className="w-12 h-12 flex items-center justify-center border-2 border-gray-300 rounded-lg p-1 bg-white">
                     {getIcon(team2)}
                 </div>
                 <div className="flex-1 flex items-center justify-between">
@@ -106,22 +122,39 @@ const NyanMatchCard = ({ match, participants, ...props }: MatchCardProps) => {
 // ==========================================
 // 3. 메인 Public 대진표 페이지
 // ==========================================
+
+// ✅ ESLint 에러 해결을 위한 타입 정의
+interface Sport {
+    id: string;
+    name: string;
+}
+
+interface BracketMatch {
+    id: string | number;
+    nextMatchId: string | number | null;
+    tournamentRoundText: string;
+    state: 'SCHEDULED' | 'DONE';
+    participants: Participant[];
+}
+
 export default function PublicBracketPage() {
     const supabase = createClient();
-    const [sports, setSports] = useState<any[]>([]);
+
+    // ✅ any[] 대신 명확한 타입 사용
+    const [sports, setSports] = useState<Sport[]>([]);
     const [selectedSport, setSelectedSport] = useState('');
-    const [bracketData, setBracketData] = useState<any[]>([]);
+    const [bracketData, setBracketData] = useState<BracketMatch[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [maxRound, setMaxRound] = useState(0); // 제목 설정을 위해
+    const [maxRound, setMaxRound] = useState(0);
 
     // 1. 진행 중인 종목 목록 불러오기
     useEffect(() => {
         const fetchSports = async () => {
             const { data } = await supabase.from('sports').select('id, name');
-            if (data) setSports(data);
+            if (data) setSports(data as Sport[]);
         };
         fetchSports();
-    }, []);
+    }, [supabase]);
 
     // 2. 선택한 종목의 대진표 데이터 불러오기 및 변환
     useEffect(() => {
@@ -129,23 +162,25 @@ export default function PublicBracketPage() {
 
         const fetchBracket = async () => {
             setIsLoading(true);
+
+            // ✅ Parser Error 방지를 위해 select 쿼리 내의 주석 제거
             const { data: matchData } = await supabase
                 .from('matches')
                 .select(
                     `
-          *,
-          team1:team1_id(name, icon_key), -- NEW: 동물 키도 같이 가져옴
-          team2:team2_id(name, icon_key)  -- NEW: 동물 키도 같이 가져옴
-        `
+                    *,
+                    team1:team1_id(name, icon_key),
+                    team2:team2_id(name, icon_key)
+                `
                 )
                 .eq('sport_id', selectedSport);
 
             if (matchData && matchData.length > 0) {
-                // 최대 라운드 계산 (가장 큰 round 값을 찾아 제목에 사용)
+                // 최대 라운드 계산
                 const max = Math.max(...matchData.map((m) => m.round));
                 setMaxRound(max);
 
-                const formattedMatches = matchData.map((m) => {
+                const formattedMatches: BracketMatch[] = matchData.map((m) => {
                     const isFinished = m.status === '종료';
                     const team1Won = isFinished && m.team1_score > m.team2_score;
                     const team2Won = isFinished && m.team2_score > m.team1_score;
@@ -161,14 +196,14 @@ export default function PublicBracketPage() {
                                 isWinner: team1Won,
                                 name: m.team1?.name || '미정',
                                 resultText: isFinished ? m.team1_score?.toString() : null,
-                                iconKey: m.team1?.icon_key, // ★ 핵심: 동물 키를 participants 데이터에 포합
+                                iconKey: m.team1?.icon_key,
                             },
                             {
                                 id: m.team2_id || `t2-dummy-${m.id}`,
                                 isWinner: team2Won,
                                 name: m.team2?.name || '미정',
                                 resultText: isFinished ? m.team2_score?.toString() : null,
-                                iconKey: m.team2?.icon_key, // ★ 핵심: 동물 키를 participants 데이터에 포합
+                                iconKey: m.team2?.icon_key,
                             },
                         ],
                     };
@@ -182,7 +217,7 @@ export default function PublicBracketPage() {
         };
 
         fetchBracket();
-    }, [selectedSport]);
+    }, [selectedSport, supabase]);
 
     return (
         <div className="min-h-screen bg-gray-100 p-6 md:p-12">
@@ -231,7 +266,13 @@ export default function PublicBracketPage() {
                                 matches={bracketData}
                                 // ★ 핵심: 우리가 만든 NyanMatchCard 컴포넌트를 사용하도록 지정
                                 matchComponent={NyanMatchCard}
-                                svgWrapper={({ children, ...props }) => (
+                                svgWrapper={({
+                                    children,
+                                    ...props
+                                }: {
+                                    children: React.ReactNode;
+                                    [key: string]: unknown;
+                                }) => (
                                     // 트리 그래픽(SVG)의 크기와 위치 조정
                                     <SVGViewer
                                         width={1000}
