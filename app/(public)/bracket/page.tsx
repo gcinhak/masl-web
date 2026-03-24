@@ -8,7 +8,6 @@ import { SingleEliminationBracket } from '@g-loot/react-tournament-brackets';
 
 // ==========================================
 // 1. 손글씨 스타일 폰트 스타일 정의
-// ✅ 수정됨: 글자 크기를 기존보다 약 1.5배(1.5rem)로 키움
 // ==========================================
 const handwritingStyle = {
     fontFamily: '"Caveat", "Indie Flower", cursive',
@@ -57,8 +56,6 @@ const NyanMatchCard = ({ match }: CustomMatchProps) => {
         <div className="bg-transparent flex flex-col justify-center" style={{ width: '100%', height: '100%' }}>
             {/* 팀 1 영역 */}
             <div className={`flex items-center justify-center px-2 py-1 ${team1?.isWinner ? 'bg-gray-50' : ''}`}>
-                {/* ✅ 수정됨: 팀별 이미지(동물 아이콘) 박스 삭제 */}
-
                 <span
                     className={`text-center mx-2 flex-1 ${team1?.isWinner ? 'text-black font-black' : 'text-gray-700'}`}
                     style={handwritingStyle}
@@ -76,8 +73,6 @@ const NyanMatchCard = ({ match }: CustomMatchProps) => {
 
             {/* 팀 2 영역 */}
             <div className={`flex items-center justify-center px-2 py-1 ${team2?.isWinner ? 'bg-gray-50' : ''}`}>
-                {/* ✅ 수정됨: 팀별 이미지(동물 아이콘) 박스 삭제 */}
-
                 <span
                     className={`text-center mx-2 flex-1 ${team2?.isWinner ? 'text-black font-black' : 'text-gray-700'}`}
                     style={handwritingStyle}
@@ -123,7 +118,7 @@ export default function PublicBracketPage() {
             setIsLoading(true);
             const { data: matchData } = await supabase
                 .from('matches')
-                .select(`*, team1:team1_id(name), team2:team2_id(name)`) // ✅ 수정됨: 불필요한 icon_key 데이터 호출 삭제
+                .select(`*, team1:team1_id(name), team2:team2_id(name)`)
                 .eq('sport_id', selectedSport);
 
             if (matchData && matchData.length > 0) {
@@ -170,7 +165,7 @@ export default function PublicBracketPage() {
     return (
         <div className="min-h-screen bg-gray-50 p-6 md:p-12">
             <div className="max-w-7xl mx-auto flex flex-col items-center">
-                {/* 상단 헤더 영역 (타이틀 좌, 드롭박스 우) - 디자인 유지 */}
+                {/* 상단 헤더 영역 (타이틀 좌, 드롭박스 우) */}
                 <div className="w-full flex flex-col md:flex-row items-center justify-between border-b-8 border-black pb-6 mb-10 gap-6">
                     <div className="text-center md:text-left">
                         <h1
@@ -179,7 +174,7 @@ export default function PublicBracketPage() {
                         >
                             {maxRound > 0 ? `${maxRound}강 대진표` : '대진표 확인'}
                         </h1>
-                        <p className="text-lg md:text-xl text-gray-600 mt-2 font-bold">MASL 스포츠 리그 실시간 상황</p>
+                        {/* ✅ 수정됨: "MASL 스포츠 리그 실시간 상황" 텍스트가 있던 <p> 태그 삭제 */}
                     </div>
 
                     <div
@@ -201,7 +196,7 @@ export default function PublicBracketPage() {
                     </div>
                 </div>
 
-                {/* 대진표 구역 (흰 바탕, 굵은 테두리 상자) - 디자인 유지 */}
+                {/* 대진표 구역 (흰 바탕, 굵은 테두리 상자) */}
                 <div className="bg-white border-4 border-black p-4 md:p-8 rounded-sm shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full flex-1 relative overflow-x-auto flex justify-center items-center">
                     {isLoading ? (
                         <div className="text-center py-20 text-gray-500 text-lg font-bold">
@@ -212,7 +207,6 @@ export default function PublicBracketPage() {
                             <SingleEliminationBracket
                                 matches={bracketData}
                                 matchComponent={NyanMatchCard}
-                                // ✅ 수정됨: 확대/축소 기능을 완전히 차단하기 위해 SVGViewer 대신 기본 <svg> 태그를 사용
                                 svgWrapper={({
                                     children,
                                     ...props
