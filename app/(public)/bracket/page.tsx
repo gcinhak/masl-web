@@ -1,7 +1,7 @@
 // app/(public)/bracket/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 // 대진표 라이브러리 및 custom 컴포넌트 임포트
 import { SingleEliminationBracket, SVGViewer } from '@g-loot/react-tournament-brackets';
