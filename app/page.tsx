@@ -39,6 +39,9 @@ export default async function Home() {
         );
     }
 
+    // ✅ 구글 프로필에서 이름(full_name)을 꺼내옵니다. (만약 이름이 설정 안 되어있다면 이메일 아이디 부분만 사용)
+    const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0];
+
     // 로그인 상태라면 DB에서 유저 권한(Role)과 상태(Status)를 가져옴
     const { data: roleData } = await supabase.from('user_roles').select('role, status').eq('id', user.id).single();
 
@@ -67,9 +70,8 @@ export default async function Home() {
                         >
                             환영합니다!
                         </h1>
-                        <p className="text-lg md:text-xl text-gray-600 mt-3 font-bold">
-                            {user.email} 님, 즐거운 스포츠 라이프를 즐겨보세요.
-                        </p>
+                        {/* ✅ 수정됨: user.email 대신 userName을 사용 */}
+                        <p className="text-lg md:text-xl text-gray-600 mt-3 font-bold">{userName} 님, 환영합니다.</p>
                     </div>
 
                     <div className="bg-white border-4 border-black px-4 py-2 rounded-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
@@ -82,7 +84,6 @@ export default async function Home() {
                     {/* 참가 신청 카드 */}
                     <Link href="/apply" className="block group">
                         <div className="bg-white rounded-sm p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] h-full transition-transform transform group-hover:-translate-y-2 group-hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center text-center">
-                            {/* ✅ 수정됨: 이모티콘 삭제 */}
                             <h2 className="text-3xl font-extrabold mb-4 text-black tracking-tighter">팀 참가 신청</h2>
                             <p className="text-gray-700 font-bold text-lg leading-relaxed">
                                 새로운 시즌에 참가할 팀을
@@ -95,7 +96,6 @@ export default async function Home() {
                     {/* 대진표 확인 카드 */}
                     <Link href="/bracket" className="block group">
                         <div className="bg-white rounded-sm p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] h-full transition-transform transform group-hover:-translate-y-2 group-hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center text-center">
-                            {/* ✅ 수정됨: 이모티콘 삭제 */}
                             <h2 className="text-3xl font-extrabold mb-4 text-black tracking-tighter">대진표 확인</h2>
                             <p className="text-gray-700 font-bold text-lg leading-relaxed">
                                 진행 중인 대회의 실시간
