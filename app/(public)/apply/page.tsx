@@ -25,11 +25,11 @@ export default function ApplyPage() {
     // 상태 관리
     const [sports, setSports] = useState<Sport[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [currentUserEmail, setCurrentUserEmail] = useState('');
 
     // 폼 입력 데이터 상태
     const [selectedSport, setSelectedSport] = useState('');
     const [teamName, setTeamName] = useState('');
-    const [applicantEmail, setApplicantEmail] = useState('');
 
     // 팀원 명단 상태 (기본 5명 세팅)
     const [members, setMembers] = useState<Member[]>(
@@ -38,7 +38,18 @@ export default function ApplyPage() {
             .map(() => ({ grade: '', name: '', number: '' }))
     );
 
-    // 1. 모집중인 종목 불러오기
+    // 1. 현재 로그인한 유저의 이메일 불러오기
+    useEffect(() => {
+        async function fetchCurrentUser() {
+            const { data } = await supabase.auth.getUser();
+            if (data.user?.email) {
+                setCurrentUserEmail(data.user.email);
+            }
+        }
+        fetchCurrentUser();
+    }, [supabase]);
+
+    // 2. 모집중인 종목 불러오기
     useEffect(() => {
         async function fetchSports() {
             const { data, error } = await supabase.from('sports').select('id, name').eq('status', '모집중');
@@ -69,13 +80,13 @@ export default function ApplyPage() {
         setMembers(newMembers);
     };
 
-    // 2. 제출 버튼 클릭 시 실행
+    // 3. 제출 버튼 클릭 시 실행
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // 신청자 이메일 확인
-        if (!applicantEmail.trim()) {
-            alert('신청자 이메일을 입력해 주세요.');
+        // 로그인 확인
+        if (!currentUserEmail) {
+            alert('로그인한 후에 신청해 주세요.');
             return;
         }
 
@@ -130,7 +141,7 @@ export default function ApplyPage() {
                 // roster를 학년, 이름, 번호가 포함된 객체 배열로 저장
                 roster: validMembers,
                 status: '승인대기',
-                applicant_email: applicantEmail.trim(),
+                applicant_email: currentUserEmail,
                 representative_student: representativeStudent,
             },
         ]);
@@ -165,21 +176,17 @@ export default function ApplyPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-10">
+                    {/* 신청자 이메일 안내 */}
+                    {currentUserEmail && (
+                        <div className="bg-blue-50 border-4 border-blue-400 p-4 rounded-sm">
+                            <p className="text-lg font-bold text-blue-900">
+                                신청자 이메일: <span className="text-blue-600">{currentUserEmail}</span>
+                            </p>
+                        </div>
+                    )}
+
                     {/* 기본 정보 상자 */}
                     <div className="bg-white border-4 border-black p-6 md:p-8 rounded-sm shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col gap-6">
-                        {/* 신청자 이메일 */}
-                        <div>
-                            <label className="block text-xl font-black text-black mb-3">▶ 신청자 이메일</label>
-                            <input
-                                type="email"
-                                required
-                                placeholder="신청자의 이메일을 입력하세요"
-                                value={applicantEmail}
-                                onChange={(e) => setApplicantEmail(e.target.value)}
-                                className="w-full p-4 border-4 border-black rounded-sm focus:ring-4 focus:ring-gray-300 font-bold text-lg"
-                            />
-                        </div>
-
                         {/* 참가 종목 선택 */}
                         <div>
                             <label className="block text-xl font-black text-black mb-3">▶ 참가 종목</label>
