@@ -16,14 +16,6 @@ const handwritingStyle = {
     letterSpacing: '-0.5px',
 };
 
-// 손으로 그린 느낌의 박스 스타일
-const roughBoxStyle = {
-    border: '3px solid #000',
-    borderRadius: '2px',
-    boxShadow: '2px 2px 0px rgba(0,0,0,0.2), -1px -1px 0px rgba(0,0,0,0.1)',
-    backgroundColor: '#fff',
-};
-
 // ==========================================
 // 2. 타입 정의 (TypeScript & ESLint 통과용)
 // ==========================================
@@ -64,47 +56,64 @@ const NyanMatchCard = ({ match }: CustomMatchProps) => {
 
     return (
         <div
-            className="bg-white p-2"
+            className="bg-white p-3"
             style={{
                 width: '280px',
-                ...roughBoxStyle,
+                border: '3px solid #000',
+                borderRadius: '0px',
+                boxShadow: '2px 2px 0px rgba(0,0,0,0.15)',
+                backgroundColor: '#fff',
             }}
         >
             {/* 팀 1 영역 */}
             <div
-                className={`flex items-center gap-2 p-2 mb-2 ${team1?.isWinner ? 'bg-gray-50' : ''}`}
-                style={{ ...roughBoxStyle, borderWidth: '2px' }}
+                className={`flex flex-col items-center justify-center p-3 mb-3 ${team1?.isWinner ? 'bg-gray-50' : ''}`}
+                style={{
+                    border: '2px solid #000',
+                    borderRadius: '1px',
+                    minHeight: '60px',
+                }}
             >
-                <div className="flex-1 flex items-center justify-between">
-                    <span
-                        className={`font-bold text-lg ${team1?.isWinner ? 'font-black' : 'text-gray-700'}`}
-                        style={handwritingStyle}
-                    >
-                        {team1?.name || '(미정)'}
-                    </span>
-                    <span className="font-mono text-2xl font-black text-black ml-2">{team1?.resultText ?? '-'}</span>
-                </div>
+                <span
+                    className={`font-bold text-base text-center ${team1?.isWinner ? 'font-black' : 'text-gray-700'}`}
+                    style={handwritingStyle}
+                >
+                    {team1?.name || '(미정)'}
+                </span>
+                <span className="font-mono text-2xl font-black text-black mt-1">{team1?.resultText ?? '-'}</span>
             </div>
 
-            <div className="relative text-center my-1 h-2 flex items-center justify-center">
-                <div className="absolute w-full h-px bg-gray-300"></div>
-                <span className="relative bg-white px-2 text-xs font-bold text-gray-400">VS</span>
-            </div>
+            {/* VS 선 */}
+            <svg
+                width="100%"
+                height="24"
+                viewBox="0 0 260 24"
+                style={{ overflow: 'visible', margin: '6px 0' }}
+                preserveAspectRatio="none"
+            >
+                {/* 손그린 느낌의 (약간 휘어진) 라인 */}
+                <path d="M 10 12 Q 130 8, 250 12" stroke="#000" strokeWidth="2" fill="none" strokeLinecap="round" />
+                <text x="130" y="20" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#999">
+                    VS
+                </text>
+            </svg>
 
             {/* 팀 2 영역 */}
             <div
-                className={`flex items-center gap-2 p-2 ${team2?.isWinner ? 'bg-gray-50' : ''}`}
-                style={{ ...roughBoxStyle, borderWidth: '2px' }}
+                className={`flex flex-col items-center justify-center p-3 ${team2?.isWinner ? 'bg-gray-50' : ''}`}
+                style={{
+                    border: '2px solid #000',
+                    borderRadius: '1px',
+                    minHeight: '60px',
+                }}
             >
-                <div className="flex-1 flex items-center justify-between">
-                    <span
-                        className={`font-bold text-lg ${team2?.isWinner ? 'font-black' : 'text-gray-700'}`}
-                        style={handwritingStyle}
-                    >
-                        {team2?.name || '(미정)'}
-                    </span>
-                    <span className="font-mono text-2xl font-black text-black ml-2">{team2?.resultText ?? '-'}</span>
-                </div>
+                <span
+                    className={`font-bold text-base text-center ${team2?.isWinner ? 'font-black' : 'text-gray-700'}`}
+                    style={handwritingStyle}
+                >
+                    {team2?.name || '(미정)'}
+                </span>
+                <span className="font-mono text-2xl font-black text-black mt-1">{team2?.resultText ?? '-'}</span>
             </div>
         </div>
     );
@@ -119,7 +128,6 @@ export default function PublicBracketPage() {
     const [selectedSport, setSelectedSport] = useState('');
     const [bracketData, setBracketData] = useState<BracketMatch[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [maxRound, setMaxRound] = useState(0);
 
     // 종목 목록 불러오기
     useEffect(() => {
@@ -148,9 +156,6 @@ export default function PublicBracketPage() {
                 .eq('sport_id', selectedSport);
 
             if (matchData && matchData.length > 0) {
-                const max = Math.max(...matchData.map((m) => m.round));
-                setMaxRound(max);
-
                 const formattedMatches: BracketMatch[] = matchData.map((m) => {
                     const isFinished = m.status === '종료';
                     const team1Won = isFinished && m.team1_score > m.team2_score;
@@ -190,7 +195,6 @@ export default function PublicBracketPage() {
                 setBracketData(formattedMatches);
             } else {
                 setBracketData([]);
-                setMaxRound(0);
             }
             setIsLoading(false);
         };
@@ -203,14 +207,10 @@ export default function PublicBracketPage() {
     return (
         <div className="min-h-screen bg-gray-100 p-6 md:p-12">
             <div className="max-w-7xl mx-auto">
-                <div className="text-center mb-10 border-b-8 border-black pb-6">
-                    <h1
-                        className="text-6xl font-extrabold text-black tracking-tighter"
-                        style={{ fontFamily: 'sans-serif' }}
-                    >
-                        {maxRound > 0 ? `${maxRound}강 대진표` : '대진표 확인'}
+                <div className="text-center mb-10">
+                    <h1 className="text-2xl font-bold text-black" style={{ fontFamily: 'sans-serif' }}>
+                        대진표
                     </h1>
-                    <p className="text-xl text-gray-600 mt-3">MASL 스포츠 리그 실시간 상황</p>
                 </div>
 
                 <div className="mb-10 max-w-sm mx-auto">
