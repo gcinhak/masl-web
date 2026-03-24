@@ -56,13 +56,9 @@ const NyanMatchCard = ({ match }: CustomMatchProps) => {
 
     return (
         <div
-            className="bg-white p-3"
+            className="bg-transparent p-0"
             style={{
                 width: '280px',
-                border: '3px solid #000',
-                borderRadius: '0px',
-                boxShadow: '2px 2px 0px rgba(0,0,0,0.15)',
-                backgroundColor: '#fff',
             }}
         >
             {/* 팀 1 영역 */}
@@ -213,14 +209,13 @@ export default function PublicBracketPage() {
                     </h1>
                 </div>
 
-                <div className="mb-10 max-w-sm mx-auto">
-                    <label className="block text-sm font-bold text-gray-700 mb-2 text-center">종목 선택</label>
+                <div className="mb-10 mx-auto" style={{ width: '280px' }}>
                     <select
-                        className="w-full p-4 border-4 border-black rounded-sm focus:ring-4 focus:ring-gray-300 font-bold text-lg bg-white"
+                        className="w-full p-3 border-2 border-black rounded-sm focus:ring-2 focus:ring-gray-300 font-bold bg-white"
                         value={selectedSport}
                         onChange={(e) => setSelectedSport(e.target.value)}
                     >
-                        <option value="">대진표를 볼 종목을 선택하세요</option>
+                        <option value="">종목을 선택하세요</option>
                         {sports.map((s) => (
                             <option key={s.id} value={s.id}>
                                 {s.name}
@@ -229,11 +224,14 @@ export default function PublicBracketPage() {
                     </select>
                 </div>
 
-                <div className="bg-white rounded-sm shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black p-4 md:p-10 overflow-x-auto relative">
+                <div
+                    className="bg-transparent p-0 md:p-0 overflow-x-auto relative"
+                    style={{ width: '280px', margin: '0 auto' }}
+                >
                     {isLoading ? (
                         <div className="text-center py-20 text-gray-500 text-lg font-bold">동물 선수들 입장 중...</div>
                     ) : bracketData.length > 0 && hasFinalMatch ? (
-                        <div style={{ minWidth: '1000px', minHeight: '600px' }} className="relative">
+                        <div style={{ minWidth: '280px', minHeight: 'auto' }} className="relative">
                             <SingleEliminationBracket
                                 matches={bracketData}
                                 matchComponent={NyanMatchCard}
