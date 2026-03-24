@@ -1,7 +1,14 @@
 // next.config.ts (또는 .mjs)
+// next.config.ts (또는 .mjs)
 import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
+interface NextConfigWithEslint extends NextConfig {
+    eslint?: {
+        ignoreDuringBuilds?: boolean;
+    };
+}
+
+const nextConfig: NextConfigWithEslint = {
     /* 기존 설정이 있다면 유지하고 아래 내용을 추가하세요 */
     typescript: {
         // !! 주의: 빌드 시 타입 오류가 있어도 무시하고 배포를 진행합니다.

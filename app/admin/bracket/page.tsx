@@ -4,12 +4,32 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
+interface Team {
+    id: string;
+    name: string;
+    status?: string;
+}
+
+interface MatchRecord {
+    id: string;
+    sport_id: string;
+    round: number;
+    team1_id?: string | null;
+    team2_id?: string | null;
+    team1_score?: number | null;
+    team2_score?: number | null;
+    next_match_id?: string | null;
+    status?: string;
+    team1?: { name?: string };
+    team2?: { name?: string };
+}
+
 export default function AdminBracketPage() {
     const supabase = createClient();
-    const [sports, setSports] = useState<any[]>([]);
+    const [sports, setSports] = useState<Team[]>([]);
     const [selectedSport, setSelectedSport] = useState('');
-    const [approvedTeams, setApprovedTeams] = useState<any[]>([]);
-    const [matches, setMatches] = useState<any[]>([]);
+    const [approvedTeams, setApprovedTeams] = useState<Team[]>([]);
+    const [matches, setMatches] = useState<MatchRecord[]>([]);
     const [isGenerating, setIsGenerating] = useState(false);
 
     // 1. 초기 데이터 불러오기 (종목 목록)
@@ -19,7 +39,7 @@ export default function AdminBracketPage() {
             if (data) setSports(data);
         };
         fetchSports();
-    }, []);
+    }, [supabase]);
 
     // 2. 특정 종목을 선택했을 때 '승인된 팀'과 '기존 생성된 경기' 불러오기
     useEffect(() => {
@@ -48,7 +68,7 @@ export default function AdminBracketPage() {
             if (matchData) setMatches(matchData);
         };
         fetchSportData();
-    }, [selectedSport]);
+    }, [selectedSport, supabase]);
 
     // 3. 8강 대진표 자동 생성 로직 (★핵심)
     const generateBracket = async () => {
@@ -132,12 +152,17 @@ export default function AdminBracketPage() {
     // 4. 점수 업데이트 및 승자 자동 진출 로직
     const finishMatch = async (
         matchId: string,
-        team1Id: string,
-        team2Id: string,
+        team1Id: string | null | undefined,
+        team2Id: string | null | undefined,
         team1Score: number,
         team2Score: number,
-        nextMatchId: string | null
+        nextMatchId: string | null | undefined
     ) => {
+        if (!team1Id || !team2Id) {
+            alert('양 팀이 모두 있어야 결과를 입력할 수 있습니다.');
+            return;
+        }
+
         if (team1Score === team2Score) {
             alert('무승부는 입력할 수 없습니다. 연장전/승부차기 최종 점수를 입력해 주세요.');
             return;
@@ -210,7 +235,20 @@ export default function AdminBracketPage() {
 }
 
 // 개별 경기를 표시하고 점수를 입력받는 컴포넌트
-function MatchCard({ match, onFinish }: { match: any; onFinish: Function }) {
+function MatchCard({
+    match,
+    onFinish,
+}: {
+    match: MatchRecord;
+    onFinish: (
+        matchId: string,
+        team1Id: string | null | undefined,
+        team2Id: string | null | undefined,
+        team1Score: number,
+        team2Score: number,
+        nextMatchId: string | null | undefined
+    ) => void;
+}) {
     const [t1Score, setT1Score] = useState(match.team1_score || 0);
     const [t2Score, setT2Score] = useState(match.team2_score || 0);
 

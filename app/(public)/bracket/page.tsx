@@ -171,26 +171,34 @@ export default function PublicBracketPage() {
                     const team1Won = isFinished && m.team1_score > m.team2_score;
                     const team2Won = isFinished && m.team2_score > m.team1_score;
 
+                    const resolveParticipant = (
+                        team: { name?: string; icon_key?: string } | null,
+                        teamId: string | number | null,
+                        fallbackId: string | number,
+                        isTeam1: boolean
+                    ): Participant => ({
+                        id: teamId || fallbackId,
+                        isWinner: isTeam1 ? team1Won : team2Won,
+                        name: team?.name || '미정',
+                        resultText: isFinished
+                            ? isTeam1
+                                ? m.team1_score?.toString()
+                                : m.team2_score?.toString()
+                            : null,
+                        iconKey: team?.icon_key,
+                    });
+
+                    const nextMatchId =
+                        m.next_match_id === null || m.next_match_id === undefined ? null : m.next_match_id;
+
                     return {
                         id: m.id,
-                        nextMatchId: m.next_match_id,
+                        nextMatchId,
                         tournamentRoundText: m.round === 2 ? '결승전' : `${m.round}강전`,
                         state: isFinished ? 'DONE' : 'SCHEDULED',
                         participants: [
-                            {
-                                id: m.team1_id || `t1-dummy-${m.id}`,
-                                isWinner: team1Won,
-                                name: m.team1?.name || '미정',
-                                resultText: isFinished ? m.team1_score?.toString() : null,
-                                iconKey: m.team1?.icon_key,
-                            },
-                            {
-                                id: m.team2_id || `t2-dummy-${m.id}`,
-                                isWinner: team2Won,
-                                name: m.team2?.name || '미정',
-                                resultText: isFinished ? m.team2_score?.toString() : null,
-                                iconKey: m.team2?.icon_key,
-                            },
+                            resolveParticipant(m.team1, m.team1_id, `t1-dummy-${m.id}`, true),
+                            resolveParticipant(m.team2, m.team2_id, `t2-dummy-${m.id}`, false),
                         ],
                     };
                 });
@@ -204,6 +212,8 @@ export default function PublicBracketPage() {
 
         fetchBracket();
     }, [selectedSport, supabase]);
+
+    const hasFinalMatch = bracketData.some((m) => m.nextMatchId === null || m.nextMatchId === undefined);
 
     return (
         <div className="min-h-screen bg-gray-100 p-6 md:p-12">
@@ -237,7 +247,7 @@ export default function PublicBracketPage() {
                 <div className="bg-white rounded-sm shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black p-4 md:p-10 overflow-x-auto relative">
                     {isLoading ? (
                         <div className="text-center py-20 text-gray-500 text-lg font-bold">동물 선수들 입장 중...</div>
-                    ) : bracketData.length > 0 ? (
+                    ) : bracketData.length > 0 && hasFinalMatch ? (
                         <div style={{ minWidth: '1000px', minHeight: '600px' }} className="relative">
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white px-6 py-2 border-4 border-black">
                                 <span className="text-4xl font-extrabold text-black">우 승</span>
@@ -264,6 +274,10 @@ export default function PublicBracketPage() {
                                     </SVGViewer>
                                 )}
                             />
+                        </div>
+                    ) : bracketData.length > 0 ? (
+                        <div className="text-center py-20 text-red-500 text-lg font-bold">
+                            대진표 데이터가 유효하지 않습니다. 최종 경기(nextMatchId가 null) 확인 후 다시 시도하세요.
                         </div>
                     ) : selectedSport ? (
                         <div className="text-center py-20 text-gray-500 text-lg font-bold">
