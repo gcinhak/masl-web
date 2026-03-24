@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-// 대진표 라이브러리 및 custom 컴포넌트 임포트
+// 대진표 라이브러리 임포트
 import { SingleEliminationBracket, SVGViewer } from '@g-loot/react-tournament-brackets';
 // 동물 아이콘 임포트 (Game Icons 세트 사용)
 import {
@@ -19,7 +19,7 @@ import {
 } from 'react-icons/gi';
 
 // ==========================================
-// 1. 동물 아이콘 매핑 테이블 (DB의 icon_key와 매핑)
+// 1. 동물 아이콘 매핑 테이블
 // ==========================================
 const iconMap: { [key: string]: React.ReactNode } = {
     cat: <GiCat className="w-10 h-10 text-black" />,
@@ -31,14 +31,12 @@ const iconMap: { [key: string]: React.ReactNode } = {
     crow: <GiCrowNest className="w-10 h-10 text-black" />,
     dragon: <GiDragonHead className="w-10 h-10 text-black" />,
 };
-// 동물이 지정되지 않았거나 없을 때 보여줄 기본 아이콘 (해골)
+// 기본 아이콘 (해골)
 const DefaultIcon = <GiCrownedSkull className="w-10 h-10 text-gray-300" />;
 
 // ==========================================
-// 2. Custom Match Card 컴포넌트 (냥코 대전쟁 스타일 구현)
+// 2. 타입 정의 (TypeScript & ESLint 통과용)
 // ==========================================
-
-// ✅ 타입스크립트와 ESLint를 만족시키기 위한 데이터 생김새 정의
 interface Participant {
     id: string | number;
     isWinner?: boolean;
@@ -47,39 +45,48 @@ interface Participant {
     iconKey?: string;
 }
 
-interface CustomMatchProps {
-    match: {
-        tournamentRoundText?: string;
-        [key: string]: unknown;
-    };
+interface BracketMatch {
+    id: string | number;
+    nextMatchId: string | number | null;
+    tournamentRoundText: string;
+    state: 'SCHEDULED' | 'DONE';
     participants: Participant[];
 }
 
-// 라이브러리의 기본 카드 디자인을 버리고, 흑백 선과 동물이 올라간 디자인을 직접 그립니다.
-const NyanMatchCard = ({ match, participants }: CustomMatchProps) => {
-    // 팀 1, 2 정보 가져오기
+interface CustomMatchProps {
+    match: BracketMatch;
+    [key: string]: unknown; // 라이브러리 내부에서 넘겨주는 기타 props 허용
+}
+
+interface Sport {
+    id: string;
+    name: string;
+}
+
+// ==========================================
+// 3. Custom Match Card 컴포넌트 (냥코 대전쟁 스타일 구현)
+// ==========================================
+const NyanMatchCard = ({ match }: CustomMatchProps) => {
+    // ★ 런타임 에러 해결: participants 데이터가 match 객체 안에 들어있음을 명확히 하고 빈 배열로 방어합니다.
+    const participants = match?.participants || [];
     const team1 = participants[0];
     const team2 = participants[1];
 
-    // DB에서 가져온 icon_key를 이용해 동물 아이콘 가져오기
+    // 동물 아이콘 가져오기 로직
     const getIcon = (party?: Participant) => {
         if (!party || !party.id) return null; // 팀이 미정일 때
-        // dummy ID일 경우 (미정)
         if (typeof party.id === 'string' && party.id.startsWith('t1-dummy')) return null;
 
-        // DB의 icon_key 값 사용
         const key = party.iconKey;
         if (!key) return DefaultIcon;
         return iconMap[key] || DefaultIcon;
     };
 
     return (
-        // 흑백 테마 외곽선
         <div
             className="border-4 border-black bg-white p-2 rounded-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
             style={{ width: '280px' }}
         >
-            {/* 라운드 정보 (8강, 4강 등) */}
             <div className="text-center font-extrabold text-xl mb-3 border-b-2 border-dashed border-gray-400 pb-1">
                 {match.tournamentRoundText}
             </div>
@@ -97,7 +104,6 @@ const NyanMatchCard = ({ match, participants }: CustomMatchProps) => {
                 </div>
             </div>
 
-            {/* VS 구분선 */}
             <div className="relative text-center my-1 h-2 flex items-center justify-center">
                 <div className="absolute w-full h-px bg-gray-300"></div>
                 <span className="relative bg-white px-2 text-xs font-bold text-gray-400">VS</span>
@@ -120,34 +126,17 @@ const NyanMatchCard = ({ match, participants }: CustomMatchProps) => {
 };
 
 // ==========================================
-// 3. 메인 Public 대진표 페이지
+// 4. 메인 Public 대진표 페이지
 // ==========================================
-
-// ✅ ESLint 에러 해결을 위한 타입 정의
-interface Sport {
-    id: string;
-    name: string;
-}
-
-interface BracketMatch {
-    id: string | number;
-    nextMatchId: string | number | null;
-    tournamentRoundText: string;
-    state: 'SCHEDULED' | 'DONE';
-    participants: Participant[];
-}
-
 export default function PublicBracketPage() {
     const supabase = createClient();
-
-    // ✅ any[] 대신 명확한 타입 사용
     const [sports, setSports] = useState<Sport[]>([]);
     const [selectedSport, setSelectedSport] = useState('');
     const [bracketData, setBracketData] = useState<BracketMatch[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [maxRound, setMaxRound] = useState(0);
 
-    // 1. 진행 중인 종목 목록 불러오기
+    // 종목 목록 불러오기
     useEffect(() => {
         const fetchSports = async () => {
             const { data } = await supabase.from('sports').select('id, name');
@@ -156,14 +145,12 @@ export default function PublicBracketPage() {
         fetchSports();
     }, [supabase]);
 
-    // 2. 선택한 종목의 대진표 데이터 불러오기 및 변환
+    // 대진표 데이터 불러오기 및 변환
     useEffect(() => {
         if (!selectedSport) return;
 
         const fetchBracket = async () => {
             setIsLoading(true);
-
-            // ✅ Parser Error 방지를 위해 select 쿼리 내의 주석 제거
             const { data: matchData } = await supabase
                 .from('matches')
                 .select(
@@ -176,7 +163,6 @@ export default function PublicBracketPage() {
                 .eq('sport_id', selectedSport);
 
             if (matchData && matchData.length > 0) {
-                // 최대 라운드 계산
                 const max = Math.max(...matchData.map((m) => m.round));
                 setMaxRound(max);
 
@@ -222,7 +208,6 @@ export default function PublicBracketPage() {
     return (
         <div className="min-h-screen bg-gray-100 p-6 md:p-12">
             <div className="max-w-7xl mx-auto">
-                {/* 첨부 이미지와 비슷한 느낌의 큼직한 흑백 한글 타이틀 */}
                 <div className="text-center mb-10 border-b-8 border-black pb-6">
                     <h1
                         className="text-6xl font-extrabold text-black tracking-tighter"
@@ -233,7 +218,6 @@ export default function PublicBracketPage() {
                     <p className="text-xl text-gray-600 mt-3">MASL 스포츠 리그 실시간 상황</p>
                 </div>
 
-                {/* 종목 선택 드롭다운 */}
                 <div className="mb-10 max-w-sm mx-auto">
                     <label className="block text-sm font-bold text-gray-700 mb-2 text-center">종목 선택</label>
                     <select
@@ -250,21 +234,17 @@ export default function PublicBracketPage() {
                     </select>
                 </div>
 
-                {/* 대진표 렌더링 영역 */}
                 <div className="bg-white rounded-sm shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black p-4 md:p-10 overflow-x-auto relative">
                     {isLoading ? (
-                        <div className="text-center py-20 text-gray-500 text-lg">동물 선수들 입장 중...</div>
+                        <div className="text-center py-20 text-gray-500 text-lg font-bold">동물 선수들 입장 중...</div>
                     ) : bracketData.length > 0 ? (
-                        // 모바일 지원을 위한 최소 너비 및 높이 세팅
                         <div style={{ minWidth: '1000px', minHeight: '600px' }} className="relative">
-                            {/* 중앙 "우승" 글자 overlay (라이브러리 위에 HTML로 강제 고정) */}
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white px-6 py-2 border-4 border-black">
                                 <span className="text-4xl font-extrabold text-black">우 승</span>
                             </div>
 
                             <SingleEliminationBracket
                                 matches={bracketData}
-                                // ★ 핵심: 우리가 만든 NyanMatchCard 컴포넌트를 사용하도록 지정
                                 matchComponent={NyanMatchCard}
                                 svgWrapper={({
                                     children,
@@ -273,12 +253,10 @@ export default function PublicBracketPage() {
                                     children: React.ReactNode;
                                     [key: string]: unknown;
                                 }) => (
-                                    // 트리 그래픽(SVG)의 크기와 위치 조정
                                     <SVGViewer
                                         width={1000}
                                         height={600}
                                         {...props}
-                                        // 선 색상을 흑백 테마에 맞게 굵고 투박한 검은색으로 변경
                                         baseColor="#000000"
                                         highlightColor="#000000"
                                     >
@@ -288,14 +266,12 @@ export default function PublicBracketPage() {
                             />
                         </div>
                     ) : selectedSport ? (
-                        <div className="text-center py-20 text-gray-500 text-lg">
-                            아직 관리자가 대진표를 생성하지 않았습니다.
-                            <br />
-                            잠시만 기다려 주세요!
+                        <div className="text-center py-20 text-gray-500 text-lg font-bold">
+                            아직 대진표가 생성되지 않았습니다.
                         </div>
                     ) : (
-                        <div className="text-center py-20 text-gray-400 text-lg">
-                            위에서 종목을 선택하면 귀여운 동물 대진표가 표시됩니다.
+                        <div className="text-center py-20 text-gray-400 text-lg font-bold">
+                            위에서 종목을 선택하면 대진표가 표시됩니다.
                         </div>
                     )}
                 </div>
