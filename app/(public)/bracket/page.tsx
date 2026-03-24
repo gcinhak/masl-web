@@ -3,17 +3,36 @@
 
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+// 대진표 라이브러리 임포트
 import { SingleEliminationBracket, SVGViewer } from '@g-loot/react-tournament-brackets';
+// 동물 아이콘 임포트 (Game Icons 세트 사용)
+import {
+    GiCat,
+    GiDogHouse,
+    GiBearHead,
+    GiDinosaurBones,
+    GiWolfHead,
+    GiFrog,
+    GiCrowNest,
+    GiDragonHead,
+    GiCrownedSkull,
+} from 'react-icons/gi';
 
 // ==========================================
-// 1. 손글씨 스타일 폰트 스타일 정의
+// 1. 동물 아이콘 매핑 테이블
 // ==========================================
-const handwritingStyle = {
-    fontFamily: '"Caveat", "Indie Flower", cursive',
-    fontWeight: 700,
-    fontSize: '1.1rem', // 잘림 방지를 위해 아주 살짝 줄임
-    letterSpacing: '-0.5px',
+const iconMap: { [key: string]: React.ReactNode } = {
+    cat: <GiCat className="w-10 h-10 text-black" />,
+    dog: <GiDogHouse className="w-10 h-10 text-black" />,
+    bear: <GiBearHead className="w-10 h-10 text-black" />,
+    dino: <GiDinosaurBones className="w-10 h-10 text-black" />,
+    wolf: <GiWolfHead className="w-10 h-10 text-black" />,
+    frog: <GiFrog className="w-10 h-10 text-black" />,
+    crow: <GiCrowNest className="w-10 h-10 text-black" />,
+    dragon: <GiDragonHead className="w-10 h-10 text-black" />,
 };
+// 기본 아이콘 (해골)
+const DefaultIcon = <GiCrownedSkull className="w-10 h-10 text-gray-300" />;
 
 // ==========================================
 // 2. 타입 정의
@@ -44,48 +63,70 @@ interface Sport {
     name: string;
 }
 
+// ✅ 타입 정의 추가: SVGViewer에 전달할 custom props
+interface CustomSVGViewerProps {
+    children: React.ReactNode;
+    [key: string]: unknown;
+    disableToolbar?: boolean; // 라이브러리에 따라 다를 수 있지만 toolbar 비활성화 시도
+}
+
 // ==========================================
-// 3. Custom Match Card 컴포넌트 (잘림 현상 해결)
+// 3. Custom Match Card 컴포넌트 (사이즈 최적화 유지)
 // ==========================================
 const NyanMatchCard = ({ match }: CustomMatchProps) => {
     const participants = match?.participants || [];
     const team1 = participants[0];
     const team2 = participants[1];
 
+    const getIcon = (party?: Participant) => {
+        if (!party || !party.id) return null; // 팀이 미정일 때
+        if (typeof party.id === 'string' && party.id.startsWith('t1-dummy')) return null;
+
+        const key = party.iconKey;
+        if (!key) return DefaultIcon;
+        return iconMap[key] || DefaultIcon;
+    };
+
     return (
         <div
             className="bg-transparent flex flex-col justify-center"
             style={{
                 width: '100%',
-                height: '100%', // ★ 핵심: 라이브러리가 만든 액자 높이에 꽉 차게 자동으로 맞춤
+                height: '100%', // 액자 높이에 꽉 차게 자동으로 맞춤
             }}
         >
             {/* 팀 1 영역 */}
             <div className={`flex items-center justify-center px-2 py-1 ${team1?.isWinner ? 'bg-gray-50' : ''}`}>
+                <div className="w-8 h-8 flex items-center justify-center border-2 border-gray-200 rounded p-1 bg-white scale-90">
+                    {getIcon(team1)}
+                </div>
                 <span
-                    className={`font-bold text-center mx-2 flex-1 ${team1?.isWinner ? 'text-black font-black' : 'text-gray-700'}`}
-                    style={handwritingStyle}
+                    className={`font-bold text-center mx-2 flex-1 text-sm ${team1?.isWinner ? 'text-black font-black' : 'text-gray-700'}`}
+                    style={{ fontFamily: '"Caveat", "Indie Flower", cursive' }}
                 >
                     {team1?.name || '(미정)'}
                 </span>
-                <span className="font-mono text-lg font-black text-black ml-auto">{team1?.resultText ?? '-'}</span>
+                <span className="font-mono text-base font-black text-black ml-auto">{team1?.resultText ?? '-'}</span>
             </div>
 
             {/* VS 구분선 */}
-            <div className="relative text-center flex items-center justify-center w-full" style={{ height: '14px' }}>
+            <div className="relative text-center flex items-center justify-center w-full" style={{ height: '12px' }}>
                 <div className="absolute w-full h-px bg-gray-200"></div>
-                <span className="relative bg-white px-2 text-[10px] font-bold text-gray-400">VS</span>
+                <span className="relative bg-white px-2 text-[10px] font-bold text-gray-300">VS</span>
             </div>
 
             {/* 팀 2 영역 */}
             <div className={`flex items-center justify-center px-2 py-1 ${team2?.isWinner ? 'bg-gray-50' : ''}`}>
+                <div className="w-8 h-8 flex items-center justify-center border-2 border-gray-200 rounded p-1 bg-white scale-90">
+                    {getIcon(team2)}
+                </div>
                 <span
-                    className={`font-bold text-center mx-2 flex-1 ${team2?.isWinner ? 'text-black font-black' : 'text-gray-700'}`}
-                    style={handwritingStyle}
+                    className={`font-bold text-center mx-2 flex-1 text-sm ${team2?.isWinner ? 'text-black font-black' : 'text-gray-700'}`}
+                    style={{ fontFamily: '"Caveat", "Indie Flower", cursive' }}
                 >
                     {team2?.name || '(미정)'}
                 </span>
-                <span className="font-mono text-lg font-black text-black ml-auto">{team2?.resultText ?? '-'}</span>
+                <span className="font-mono text-base font-black text-black ml-auto">{team2?.resultText ?? '-'}</span>
             </div>
         </div>
     );
@@ -100,6 +141,7 @@ export default function PublicBracketPage() {
     const [selectedSport, setSelectedSport] = useState('');
     const [bracketData, setBracketData] = useState<BracketMatch[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [maxRound, setMaxRound] = useState(0);
 
     // 폰트 로드
     useEffect(() => {
@@ -126,49 +168,51 @@ export default function PublicBracketPage() {
             setIsLoading(true);
             const { data: matchData } = await supabase
                 .from('matches')
-                .select(`*, team1:team1_id(name, icon_key), team2:team2_id(name, icon_key)`)
+                .select(
+                    `
+                    *,
+                    team1:team1_id(name, icon_key),
+                    team2:team2_id(name, icon_key)
+                `
+                )
                 .eq('sport_id', selectedSport);
 
             if (matchData && matchData.length > 0) {
+                const max = Math.max(...matchData.map((m) => m.round));
+                setMaxRound(max);
+
                 const formattedMatches: BracketMatch[] = matchData.map((m) => {
                     const isFinished = m.status === '종료';
                     const team1Won = isFinished && m.team1_score > m.team2_score;
                     const team2Won = isFinished && m.team2_score > m.team1_score;
 
-                    const resolveParticipant = (
-                        team: { name?: string; icon_key?: string } | null,
-                        teamId: string | number | null,
-                        fallbackId: string | number,
-                        isTeam1: boolean
-                    ): Participant => ({
-                        id: teamId || fallbackId,
-                        isWinner: isTeam1 ? team1Won : team2Won,
-                        name: team?.name || '미정',
-                        resultText: isFinished
-                            ? isTeam1
-                                ? m.team1_score?.toString()
-                                : m.team2_score?.toString()
-                            : null,
-                        iconKey: team?.icon_key,
-                    });
-
-                    const nextMatchId =
-                        m.next_match_id === null || m.next_match_id === undefined ? null : m.next_match_id;
-
                     return {
                         id: m.id,
-                        nextMatchId,
+                        nextMatchId: m.next_match_id,
                         tournamentRoundText: m.round === 2 ? '결승전' : `${m.round}강전`,
                         state: isFinished ? 'DONE' : 'SCHEDULED',
                         participants: [
-                            resolveParticipant(m.team1, m.team1_id, `t1-dummy-${m.id}`, true),
-                            resolveParticipant(m.team2, m.team2_id, `t2-dummy-${m.id}`, false),
+                            {
+                                id: m.team1_id || `t1-dummy-${m.id}`,
+                                isWinner: team1Won,
+                                name: m.team1?.name || '미정',
+                                resultText: isFinished ? m.team1_score?.toString() : null,
+                                iconKey: m.team1?.icon_key,
+                            },
+                            {
+                                id: m.team2_id || `t2-dummy-${m.id}`,
+                                isWinner: team2Won,
+                                name: m.team2?.name || '미정',
+                                resultText: isFinished ? m.team2_score?.toString() : null,
+                                iconKey: m.team2?.icon_key,
+                            },
                         ],
                     };
                 });
                 setBracketData(formattedMatches);
             } else {
                 setBracketData([]);
+                setMaxRound(0);
             }
             setIsLoading(false);
         };
@@ -176,24 +220,30 @@ export default function PublicBracketPage() {
         fetchBracket();
     }, [selectedSport, supabase]);
 
-    const hasFinalMatch = bracketData.some((m) => m.nextMatchId === null || m.nextMatchId === undefined);
-
     return (
-        <div className="min-h-screen bg-white p-6 md:p-12">
+        <div className="min-h-screen bg-gray-50 p-6 md:p-12">
             <div className="max-w-7xl mx-auto flex flex-col items-center">
-                <div className="text-center mb-10 w-full">
-                    <h1 className="text-4xl font-extrabold text-black" style={{ fontFamily: 'sans-serif' }}>
-                        8강 대진표
+                <div className="text-center mb-10 w-full border-b-8 border-black pb-6">
+                    <h1
+                        className="text-6xl font-extrabold text-black tracking-tighter"
+                        style={{ fontFamily: 'sans-serif' }}
+                    >
+                        {maxRound > 0 ? `${maxRound}강 대진표` : '대진표 확인'}
                     </h1>
+                    <p className="text-xl text-gray-600 mt-3">MASL 스포츠 리그 실시간 상황</p>
                 </div>
 
-                <div className="mb-10 w-full" style={{ maxWidth: '280px' }}>
+                <div
+                    className="mb-10 w-full p-4 bg-white border-4 border-black rounded-sm shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+                    style={{ maxWidth: '320px' }}
+                >
+                    <label className="block text-sm font-bold text-gray-700 mb-2 text-center">종목 선택</label>
                     <select
-                        className="w-full p-3 border-2 border-black rounded-sm focus:ring-2 focus:ring-gray-300 font-bold bg-white"
+                        className="w-full p-3 border-4 border-black rounded-sm focus:ring-4 focus:ring-gray-300 font-bold text-lg bg-white"
                         value={selectedSport}
                         onChange={(e) => setSelectedSport(e.target.value)}
                     >
-                        <option value="">종목을 선택하세요</option>
+                        <option value="">대진표 종목 선택</option>
                         {sports.map((s) => (
                             <option key={s.id} value={s.id}>
                                 {s.name}
@@ -202,26 +252,27 @@ export default function PublicBracketPage() {
                     </select>
                 </div>
 
-                <div className="bg-transparent p-0 w-full flex-1 relative overflow-x-auto flex justify-center items-center">
+                {/* ✅ 수정됨: 대진표 구역을 흰바탕, 검은색 선 네모 상자(shadow 효과 포함)로 감쌈 */}
+                <div className="bg-white border-4 border-black p-4 md:p-8 rounded-sm shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full flex-1 relative overflow-x-auto flex justify-center items-center">
                     {isLoading ? (
                         <div className="text-center py-20 text-gray-500 text-lg font-bold">동물 선수들 입장 중...</div>
-                    ) : bracketData.length > 0 && hasFinalMatch ? (
+                    ) : bracketData.length > 0 ? (
                         <div style={{ minWidth: '1000px', minHeight: '600px' }} className="relative">
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white px-6 py-2 border-4 border-black">
-                                <span className="text-4xl font-extrabold text-black">우 승</span>
-                            </div>
+                            {/* ✅ 수정됨: 가운데 "우승" 글자 overlay 삭제 */}
 
                             <SingleEliminationBracket
                                 matches={bracketData}
                                 matchComponent={NyanMatchCard}
-                                svgWrapper={({
-                                    children,
-                                    ...props
-                                }: {
-                                    children: React.ReactNode;
-                                    [key: string]: unknown;
-                                }) => (
-                                    <SVGViewer width={1000} height={600} {...props}>
+                                // ✅ 수정됨: SVGViewer에 disableToolbar props를 전달하여 확대/축소 도구 숨김 시도
+                                svgWrapper={({ children, ...props }: CustomSVGViewerProps) => (
+                                    <SVGViewer
+                                        width={1000}
+                                        height={600}
+                                        {...props}
+                                        disableToolbar={true} // 툴바(확대/축소 버튼 등) 비활성화
+                                        baseColor="#000000"
+                                        highlightColor="#000000"
+                                    >
                                         {children}
                                     </SVGViewer>
                                 )}
@@ -234,17 +285,13 @@ export default function PublicBracketPage() {
                                 }}
                             />
                         </div>
-                    ) : bracketData.length > 0 ? (
-                        <div className="text-center py-20 text-red-500 text-lg font-bold">
-                            대진표 데이터가 유효하지 않습니다. 최종 경기(nextMatchId가 null) 확인 후 다시 시도하세요.
-                        </div>
                     ) : selectedSport ? (
                         <div className="text-center py-20 text-gray-500 text-lg font-bold">
                             아직 대진표가 생성되지 않았습니다.
                         </div>
                     ) : (
                         <div className="text-center py-20 text-gray-400 text-lg font-bold">
-                            위에서 종목을 선택하면 대진표가 표시됩니다.
+                            위에서 종목을 선택하면 귀여운 동물 대진표가 표시됩니다.
                         </div>
                     )}
                 </div>
