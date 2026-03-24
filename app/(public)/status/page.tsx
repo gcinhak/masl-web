@@ -315,7 +315,7 @@ export default function StatusPage() {
                                                                 : ''
                                                         }`}
                                                     >
-                                                        <span className="font-bold text-black min-w-[30px]">
+                                                        <span className="font-bold text-black min-w-7.5">
                                                             {index + 1}.{index === 0 && ' 대표'}
                                                         </span>
                                                         <input

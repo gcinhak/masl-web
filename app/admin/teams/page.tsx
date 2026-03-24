@@ -1,16 +1,28 @@
 // app/admin/teams/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+
+interface TeamData {
+    id: string;
+    sport_id: string;
+    name: string;
+    roster: Array<{ grade: string; name: string; number: string }>;
+    status: string;
+    applicant_email: string;
+    representative_student: string;
+    created_at: string;
+    sports?: { name: string };
+}
 
 export default function AdminTeamsPage() {
     const supabase = createClient();
-    const [teams, setTeams] = useState<any[]>([]);
+    const [teams, setTeams] = useState<TeamData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     // 1. 데이터베이스에서 참가팀 목록 불러오기
-    const fetchTeams = async () => {
+    const fetchTeams = useCallback(async () => {
         setIsLoading(true);
         // 연결된 sports 테이블의 name(종목명)까지 한 번에 가져오는 쿼리입니다.
         const { data, error } = await supabase
@@ -26,15 +38,17 @@ export default function AdminTeamsPage() {
         if (error) {
             console.error('팀 목록 불러오기 에러:', error);
         } else if (data) {
-            setTeams(data);
+            setTeams(data as TeamData[]);
         }
         setIsLoading(false);
-    };
+    }, [supabase]);
 
     // 화면이 켜질 때 딱 한 번 실행
     useEffect(() => {
-        fetchTeams();
-    }, []);
+        (async () => {
+            await fetchTeams();
+        })();
+    }, [fetchTeams]);
 
     // 2. 승인/거절 상태 변경 함수
     const updateTeamStatus = async (id: string, newStatus: string) => {
@@ -80,7 +94,7 @@ export default function AdminTeamsPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                teams.map((team) => (
+                                teams.map((team: TeamData) => (
                                     <tr key={team.id} className="border-b hover:bg-gray-50 transition">
                                         <td className="p-4 text-sm text-gray-500">
                                             {new Date(team.created_at).toLocaleDateString()}

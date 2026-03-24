@@ -240,7 +240,7 @@ export default function ApplyPage() {
                                             : 'border-gray-100'
                                     }`}
                                 >
-                                    <span className="font-black text-black min-w-[30px]">
+                                    <span className="font-black text-black min-w-7.5">
                                         {index + 1}.{index === 0 && ' 대표'}
                                     </span>
                                     <input
@@ -255,7 +255,7 @@ export default function ApplyPage() {
                                         placeholder="이름"
                                         value={member.name}
                                         onChange={(e) => handleMemberChange(index, 'name', e.target.value)}
-                                        className="flex-1 min-w-[100px] p-2 border-2 border-black rounded-sm font-bold"
+                                        className="flex-1 min-w-25 p-2 border-2 border-black rounded-sm font-bold"
                                     />
                                     <input
                                         type="text"
