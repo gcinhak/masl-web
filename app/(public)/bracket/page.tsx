@@ -31,7 +31,6 @@ const iconMap: { [key: string]: React.ReactNode } = {
     crow: <GiCrowNest className="w-10 h-10 text-black" />,
     dragon: <GiDragonHead className="w-10 h-10 text-black" />,
 };
-// 기본 아이콘 (해골)
 const DefaultIcon = <GiCrownedSkull className="w-10 h-10 text-gray-300" />;
 
 // ==========================================
@@ -63,15 +62,14 @@ interface Sport {
     name: string;
 }
 
-// ✅ 타입 정의 추가: SVGViewer에 전달할 custom props
 interface CustomSVGViewerProps {
     children: React.ReactNode;
     [key: string]: unknown;
-    disableToolbar?: boolean; // 라이브러리에 따라 다를 수 있지만 toolbar 비활성화 시도
+    disableToolbar?: boolean;
 }
 
 // ==========================================
-// 3. Custom Match Card 컴포넌트 (사이즈 최적화 유지)
+// 3. Custom Match Card 컴포넌트
 // ==========================================
 const NyanMatchCard = ({ match }: CustomMatchProps) => {
     const participants = match?.participants || [];
@@ -79,7 +77,7 @@ const NyanMatchCard = ({ match }: CustomMatchProps) => {
     const team2 = participants[1];
 
     const getIcon = (party?: Participant) => {
-        if (!party || !party.id) return null; // 팀이 미정일 때
+        if (!party || !party.id) return null;
         if (typeof party.id === 'string' && party.id.startsWith('t1-dummy')) return null;
 
         const key = party.iconKey;
@@ -88,13 +86,7 @@ const NyanMatchCard = ({ match }: CustomMatchProps) => {
     };
 
     return (
-        <div
-            className="bg-transparent flex flex-col justify-center"
-            style={{
-                width: '100%',
-                height: '100%', // 액자 높이에 꽉 차게 자동으로 맞춤
-            }}
-        >
+        <div className="bg-transparent flex flex-col justify-center" style={{ width: '100%', height: '100%' }}>
             {/* 팀 1 영역 */}
             <div className={`flex items-center justify-center px-2 py-1 ${team1?.isWinner ? 'bg-gray-50' : ''}`}>
                 <div className="w-8 h-8 flex items-center justify-center border-2 border-gray-200 rounded p-1 bg-white scale-90">
@@ -143,7 +135,6 @@ export default function PublicBracketPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [maxRound, setMaxRound] = useState(0);
 
-    // 폰트 로드
     useEffect(() => {
         const link = document.createElement('link');
         link.href = 'https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Indie+Flower&display=swap';
@@ -151,7 +142,6 @@ export default function PublicBracketPage() {
         document.head.appendChild(link);
     }, []);
 
-    // 종목 목록 불러오기
     useEffect(() => {
         const fetchSports = async () => {
             const { data } = await supabase.from('sports').select('id, name');
@@ -160,7 +150,6 @@ export default function PublicBracketPage() {
         fetchSports();
     }, [supabase]);
 
-    // 대진표 데이터 불러오기 및 변환
     useEffect(() => {
         if (!selectedSport) return;
 
@@ -168,13 +157,7 @@ export default function PublicBracketPage() {
             setIsLoading(true);
             const { data: matchData } = await supabase
                 .from('matches')
-                .select(
-                    `
-                    *,
-                    team1:team1_id(name, icon_key),
-                    team2:team2_id(name, icon_key)
-                `
-                )
+                .select(`*, team1:team1_id(name, icon_key), team2:team2_id(name, icon_key)`)
                 .eq('sport_id', selectedSport);
 
             if (matchData && matchData.length > 0) {
@@ -223,53 +206,54 @@ export default function PublicBracketPage() {
     return (
         <div className="min-h-screen bg-gray-50 p-6 md:p-12">
             <div className="max-w-7xl mx-auto flex flex-col items-center">
-                <div className="text-center mb-10 w-full border-b-8 border-black pb-6">
-                    <h1
-                        className="text-6xl font-extrabold text-black tracking-tighter"
-                        style={{ fontFamily: 'sans-serif' }}
+                {/* ✅ 수정됨: 타이틀(좌)과 드롭박스(우)를 나란히 배치하는 헤더 영역 */}
+                <div className="w-full flex flex-col md:flex-row items-center justify-between border-b-8 border-black pb-6 mb-10 gap-6">
+                    {/* 왼쪽 타이틀 */}
+                    <div className="text-center md:text-left">
+                        <h1
+                            className="text-5xl md:text-6xl font-extrabold text-black tracking-tighter"
+                            style={{ fontFamily: 'sans-serif' }}
+                        >
+                            {maxRound > 0 ? `${maxRound}강 대진표` : '대진표 확인'}
+                        </h1>
+                        <p className="text-lg md:text-xl text-gray-600 mt-2 font-bold">MASL 스포츠 리그 실시간 상황</p>
+                    </div>
+
+                    {/* 오른쪽 드롭박스 */}
+                    <div
+                        className="w-full md:w-auto bg-white border-4 border-black p-2 rounded-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                        style={{ minWidth: '260px' }}
                     >
-                        {maxRound > 0 ? `${maxRound}강 대진표` : '대진표 확인'}
-                    </h1>
-                    <p className="text-xl text-gray-600 mt-3">MASL 스포츠 리그 실시간 상황</p>
+                        <select
+                            className="w-full p-2 border-2 border-black rounded-sm focus:ring-4 focus:ring-gray-300 font-bold text-lg bg-white cursor-pointer"
+                            value={selectedSport}
+                            onChange={(e) => setSelectedSport(e.target.value)}
+                        >
+                            <option value="">▶ 종목 선택 ◀</option>
+                            {sports.map((s) => (
+                                <option key={s.id} value={s.id}>
+                                    {s.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
-                <div
-                    className="mb-10 w-full p-4 bg-white border-4 border-black rounded-sm shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
-                    style={{ maxWidth: '320px' }}
-                >
-                    <label className="block text-sm font-bold text-gray-700 mb-2 text-center">종목 선택</label>
-                    <select
-                        className="w-full p-3 border-4 border-black rounded-sm focus:ring-4 focus:ring-gray-300 font-bold text-lg bg-white"
-                        value={selectedSport}
-                        onChange={(e) => setSelectedSport(e.target.value)}
-                    >
-                        <option value="">대진표 종목 선택</option>
-                        {sports.map((s) => (
-                            <option key={s.id} value={s.id}>
-                                {s.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* ✅ 수정됨: 대진표 구역을 흰바탕, 검은색 선 네모 상자(shadow 효과 포함)로 감쌈 */}
+                {/* 대진표 구역 (흰 바탕, 굵은 테두리 상자) */}
                 <div className="bg-white border-4 border-black p-4 md:p-8 rounded-sm shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full flex-1 relative overflow-x-auto flex justify-center items-center">
                     {isLoading ? (
                         <div className="text-center py-20 text-gray-500 text-lg font-bold">동물 선수들 입장 중...</div>
                     ) : bracketData.length > 0 ? (
                         <div style={{ minWidth: '1000px', minHeight: '600px' }} className="relative">
-                            {/* ✅ 수정됨: 가운데 "우승" 글자 overlay 삭제 */}
-
                             <SingleEliminationBracket
                                 matches={bracketData}
                                 matchComponent={NyanMatchCard}
-                                // ✅ 수정됨: SVGViewer에 disableToolbar props를 전달하여 확대/축소 도구 숨김 시도
                                 svgWrapper={({ children, ...props }: CustomSVGViewerProps) => (
                                     <SVGViewer
                                         width={1000}
                                         height={600}
                                         {...props}
-                                        disableToolbar={true} // 툴바(확대/축소 버튼 등) 비활성화
+                                        disableToolbar={true}
                                         baseColor="#000000"
                                         highlightColor="#000000"
                                     >
@@ -278,9 +262,7 @@ export default function PublicBracketPage() {
                                 )}
                                 options={{
                                     style: {
-                                        roundHeader: {
-                                            isShown: false,
-                                        },
+                                        roundHeader: { isShown: false },
                                     },
                                 }}
                             />
